@@ -36,7 +36,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun WelcomeScreen(modifier: Modifier = Modifier) {
     Box(
@@ -45,7 +44,7 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
         // 1. Imagen de Fondo (Asegúrate de tener una imagen en res/drawable llamada 'fondo_bienvenida')
         // Si aún no la tienes, puedes usar Color.Gray temporalmente.
         Image(
-            painter = painterResource(id = R.drawable.fondo_bienvenida),
+            painter = painterResource(id = R.drawable.fondo_bienvenidaapp),
             contentDescription = "Fondo Rumbo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
