@@ -36,6 +36,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun WelcomeScreen(modifier: Modifier = Modifier) {
     Box(
