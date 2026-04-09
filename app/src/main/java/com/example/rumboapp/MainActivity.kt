@@ -53,7 +53,21 @@ class MainActivity : ComponentActivity() {
                     }
                     // Ruta 2: Login
                     composable("login") {
-                        LoginScreen()
+                        LoginScreen(
+                            onForgotPasswordClick = {
+                                navController.navigate("recupera_password") // Así se llama tu nueva pantalla
+                            }
+                        )
+                    }
+
+                    composable("recupera_password") {
+                        RecuperaPasswordScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onSendCodeClick = {
+                                // Aquí podrías navegar a una pantalla de "Código Enviado" después
+                                android.util.Log.d("RUMBO_DEBUG", "Código enviado")
+                            }
+                        )
                     }
                 }
             }

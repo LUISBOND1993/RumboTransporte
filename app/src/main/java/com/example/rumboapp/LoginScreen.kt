@@ -19,13 +19,12 @@ import androidx.compose.ui.unit.sp
 import com.example.rumboapp.ui.theme.RumboAppTheme
 
 @Composable
-fun LoginScreen() {
-    val verdeOscuro = Color(0xFF1B3011) // Definimos el color para reusarlo
+fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el parámetro de navegación
+    val verdeOscuro = Color(0xFF1B3011)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            // CAMBIO CLAVE: Cambiamos Color.White por el verde oscuro de tu diseño
             .background(verdeOscuro)
     ) {
         // Parte Superior: Imagen
@@ -33,7 +32,7 @@ fun LoginScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .background(Color.White) // Mantenemos blanco detrás de la imagen por si acaso
+                .background(Color.White)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.fondo_bienvenidaapp),
@@ -47,10 +46,9 @@ fun LoginScreen() {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1.5f)
-                // Tu offset para eliminar los espacios del redondeo
+                .weight(1.8f) // Aumenté un poco el peso para que quepa todo cómodamente
                 .offset(y = (-40).dp),
-            color = verdeOscuro,
+            color = Color(0xFF2D4B1E),
             shape = RoundedCornerShape(topStart = 45.dp, topEnd = 45.dp)
         ) {
             Column(
@@ -59,7 +57,6 @@ fun LoginScreen() {
                     .padding(horizontal = 32.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Espacio para compensar el offset superior
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
@@ -69,7 +66,7 @@ fun LoginScreen() {
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Email
                 Text(
@@ -114,11 +111,23 @@ fun LoginScreen() {
                     )
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                // --- NUEVO: TEXTO OLVIDASTE CONTRASEÑA ---
+                TextButton(
+                    onClick = onForgotPasswordClick,
+                    modifier = Modifier.align(Alignment.End) // Lo alineamos a la derecha
+                ) {
+                    Text(
+                        text = "¿Olvidaste tu contraseña?",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 13.sp
+                    )
+                }
 
-                // Botón
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón Iniciar Sesión
                 Button(
-                    onClick = { /* Acción */ },
+                    onClick = { /* Acción Login */ },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -146,6 +155,6 @@ fun LoginScreen() {
 @Composable
 fun LoginPreview() {
     RumboAppTheme {
-        LoginScreen()
+        LoginScreen(onForgotPasswordClick = {})
     }
 }
