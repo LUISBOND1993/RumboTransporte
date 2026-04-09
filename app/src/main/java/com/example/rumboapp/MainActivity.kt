@@ -5,9 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,11 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.rumboapp.ui.theme.RumboAppTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,9 +37,24 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RumboAppTheme {
-                // Scaffold maneja el espacio de la pantalla, incluyendo barras de sistema
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LoginScreen() // Quita el modifier de padding
+                val navController = rememberNavController() // El control remoto de las pantallas
+
+                NavHost(navController = navController, startDestination = "welcome") {
+                    // Ruta 1: Bienvenida
+                    composable("welcome") {
+                        WelcomeScreen(onIngresarClick = {
+                            navController.navigate("login") {
+                                // Esto evita que el Debugger se "trabe" al intentar
+                                // abrir varias veces la misma pantalla
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        })
+                    }
+                    // Ruta 2: Login
+                    composable("login") {
+                        LoginScreen()
+                    }
                 }
             }
         }
@@ -37,67 +62,39 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WelcomeScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        // 1. Imagen de Fondo (Asegúrate de tener una imagen en res/drawable llamada 'fondo_bienvenida')
-        // Si aún no la tienes, puedes usar Color.Gray temporalmente.
+fun WelcomeScreen(onIngresarClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // La imagen va PRIMERO para que sea el fondo
         Image(
             painter = painterResource(id = R.drawable.fondo_bienvenidaapp),
-            contentDescription = "Fondo Rumbo",
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
 
-        // 2. Capa de contenido encima de la imagen
+        // La Column va DESPUÉS para que esté "encima" de la imagen
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp, vertical = 60.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(bottom = 80.dp), // Subimos un poco el botón
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Sección Superior: Textos
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "RUMBO",
-                    fontSize = 38.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.Black
-                )
-                Text(
-                    text = "Puerta a puerta",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color(0xFF1B3011) // El verde oscuro de tu Figma
-                )
-                Text(
-                    text = "de Bogotá al Llano",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1B3011),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            // Sección Inferior: Botón
             Button(
-                onClick = { /* Aquí irá la navegación al Login */ },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFD4AF37) // El color mostaza/dorado del botón
-                ),
+                onClick = {
+                    // 1. Verificamos en Logcat
+                    android.util.Log.d("RUMBO_DEBUG", "Ejecutando navegación optimizada...")
+
+                    // 2. Ejecutamos la navegación
+                    onIngresarClick()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
                 shape = RoundedCornerShape(25.dp),
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(55.dp)
             ) {
-                Text(
-                    text = "INGRESAR",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+                Text("INGRESAR", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -107,6 +104,6 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
 @Composable
 fun WelcomePreview() {
     RumboAppTheme {
-        WelcomeScreen()
+        WelcomeScreen(onIngresarClick = { })
     }
 }
