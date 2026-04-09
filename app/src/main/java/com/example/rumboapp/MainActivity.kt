@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
             RumboAppTheme {
                 // Scaffold maneja el espacio de la pantalla, incluyendo barras de sistema
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    WelcomeScreen(modifier = Modifier.padding(innerPadding))
+                    LoginScreen() // Quita el modifier de padding
                 }
             }
         }
