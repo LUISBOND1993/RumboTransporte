@@ -19,13 +19,17 @@ import androidx.compose.ui.unit.sp
 import com.example.rumboapp.ui.theme.RumboAppTheme
 
 @Composable
-fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el parámetro de navegación
-    val verdeOscuro = Color(0xFF1B3011)
+fun LoginScreen(
+    onForgotPasswordClick: () -> Unit,
+    onRegisterClick: () -> Unit // <-- NUEVO: Parámetro para navegar al Registro
+) {
+    val verdeFondo = Color(0xFF1B3011) // El verde de la base
+    val verdeContenedor = Color(0xFF2D4B1E) // El verde de tu superficie (Surface)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(verdeOscuro)
+            .background(verdeFondo)
     ) {
         // Parte Superior: Imagen
         Box(
@@ -46,9 +50,9 @@ fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el paráme
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1.8f) // Aumenté un poco el peso para que quepa todo cómodamente
-                .offset(y = (-40).dp),
-            color = Color(0xFF2D4B1E),
+                .weight(1.8f)
+                .offset(y = (-40).dp), // Offset para ocultar bordes
+            color = verdeContenedor,
             shape = RoundedCornerShape(topStart = 45.dp, topEnd = 45.dp)
         ) {
             Column(
@@ -111,10 +115,10 @@ fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el paráme
                     )
                 )
 
-                // --- NUEVO: TEXTO OLVIDASTE CONTRASEÑA ---
+                // Texto Olvidaste Contraseña
                 TextButton(
                     onClick = onForgotPasswordClick,
-                    modifier = Modifier.align(Alignment.End) // Lo alineamos a la derecha
+                    modifier = Modifier.align(Alignment.End)
                 ) {
                     Text(
                         text = "¿Olvidaste tu contraseña?",
@@ -130,22 +134,28 @@ fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el paráme
                     onClick = { /* Acción Login */ },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(55.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFD4AF37)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Iniciar Sesión", color = Color.Black, fontWeight = FontWeight.Bold)
+                    Text("Iniciar Sesión", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                Text(
-                    text = "¿No tienes cuenta? Regístrate",
-                    color = Color.White,
-                    fontSize = 14.sp
-                )
+                // --- MODIFICACIÓN: Texto de Registro como Botón ---
+                TextButton(
+                    onClick = onRegisterClick // <-- LA ORDEN MÁGICA AL REGISTRO
+                ) {
+                    Text(
+                        text = "¿No tienes cuenta? Regístrate",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
@@ -155,6 +165,9 @@ fun LoginScreen(onForgotPasswordClick: () -> Unit) { // <-- Añadimos el paráme
 @Composable
 fun LoginPreview() {
     RumboAppTheme {
-        LoginScreen(onForgotPasswordClick = {})
+        LoginScreen(
+            onForgotPasswordClick = {},
+            onRegisterClick = {} // Añadido al Preview para evitar error
+        )
     }
 }

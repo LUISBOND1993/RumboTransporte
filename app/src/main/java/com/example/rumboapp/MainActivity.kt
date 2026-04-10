@@ -30,42 +30,93 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.rumboapp.ui.theme.RumboAppTheme
 
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             RumboAppTheme {
-                val navController = rememberNavController() // El control remoto de las pantallas
+                val navController = rememberNavController()
 
+                // NavHost: El mapa central de navegación de tu App
                 NavHost(navController = navController, startDestination = "welcome") {
-                    // Ruta 1: Bienvenida
+
+                    // 1. Pantalla de Bienvenida
                     composable("welcome") {
                         WelcomeScreen(onIngresarClick = {
                             navController.navigate("login") {
-                                // Esto evita que el Debugger se "trabe" al intentar
-                                // abrir varias veces la misma pantalla
                                 launchSingleTop = true
                                 restoreState = true
                             }
                         })
                     }
-                    // Ruta 2: Login
+
+                    // 2. Pantalla de Login
                     composable("login") {
                         LoginScreen(
                             onForgotPasswordClick = {
-                                navController.navigate("recupera_password") // Así se llama tu nueva pantalla
+                                navController.navigate("recupera_password")
+                            },
+                            onRegisterClick = {
+                                navController.navigate("registro")
                             }
                         )
                     }
 
+                    // 3. Pantalla de Recuperar Contraseña
                     composable("recupera_password") {
                         RecuperaPasswordScreen(
                             onBackClick = { navController.popBackStack() },
                             onSendCodeClick = {
-                                // Aquí podrías navegar a una pantalla de "Código Enviado" después
-                                android.util.Log.d("RUMBO_DEBUG", "Código enviado")
+                                navController.navigate("codigo_verificacion")
+                                android.util.Log.d("RUMBO_DEBUG", "Cambiando a pantalla de código")
+                            }
+                        )
+                    }
+
+                    // 4. Pantalla de Código de Verificación (MODIFICADA)
+                    composable("codigo_verificacion") {
+                        CodigoVerificacionScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onConfirmCodeClick = {
+                                // Ahora navegamos a la pantalla final de cambio de clave
+                                navController.navigate("nueva_contrasena")
+                                android.util.Log.d("RUMBO_DEBUG", "Código confirmado, ir a nueva clave")
+                            }
+                        )
+                    }
+
+                    // 5. Pantalla de Nueva Contraseña (NUEVA RUTA)
+                    composable("nueva_contrasena") {
+                        NuevaContrasenaScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onConfirmPasswordClick = {
+                                // Al terminar, volvemos al Login y limpiamos el historial
+                                android.util.Log.d("RUMBO_DEBUG", "Contraseña cambiada con éxito")
+                                navController.navigate("login") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+
+                    // 6. Pantalla de Registro
+                    composable("registro") {
+                        RegistroScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onCreateAccountClick = {
+                                navController.navigate("registro_completado")
+                            }
+                        )
+                    }
+
+                    // 7. Pantalla de Registro Completado
+                    composable("registro_completado") {
+                        RegistroCompletadoScreen(
+                            onLoginClick = {
+                                navController.navigate("login") {
+                                    popUpTo("login") { inclusive = true }
+                                }
                             }
                         )
                     }
@@ -78,7 +129,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WelcomeScreen(onIngresarClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // La imagen va PRIMERO para que sea el fondo
         Image(
             painter = painterResource(id = R.drawable.fondo_bienvenidaapp),
             contentDescription = null,
@@ -86,20 +136,16 @@ fun WelcomeScreen(onIngresarClick: () -> Unit) {
             contentScale = ContentScale.Crop
         )
 
-        // La Column va DESPUÉS para que esté "encima" de la imagen
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 80.dp), // Subimos un poco el botón
+                .padding(bottom = 80.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = {
-                    // 1. Verificamos en Logcat
                     android.util.Log.d("RUMBO_DEBUG", "Ejecutando navegación optimizada...")
-
-                    // 2. Ejecutamos la navegación
                     onIngresarClick()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
