@@ -2,26 +2,10 @@ package com.example.rumboapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,18 +18,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rumboapp.ui.theme.RumboAppTheme
 
-
 @Composable
-fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit) {
+fun RecuperaPasswordScreen(
+    onBackClick: () -> Unit,
+    onSendCodeClick: (String) -> Unit
+) {
+    // Estado del campo de texto
+    var email by remember { mutableStateOf("") }
+
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // 1. Imagen de Fondo (Fondo de la ciudad/pueblo)
+        // 1. Imagen de Fondo
         Image(
             painter = painterResource(id = R.drawable.fondo_cambio_contrasena),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.6f), // Ocupa un poco más de la mitad
+                .fillMaxHeight(0.6f),
             contentScale = ContentScale.Crop
         )
 
@@ -53,12 +42,10 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                // El padding top determina dónde empieza el verde
                 .padding(top = 350.dp)
-                // OFFSET NEGATIVO: Sube el contenedor para pisar la imagen y ocultar bordes
                 .offset(y = (-30).dp)
                 .background(
-                    color = Color(0xFF2D4B1E), // Verde oscuro del diseño
+                    color = Color(0xFF2D4B1E),
                     shape = RoundedCornerShape(topStart = 60.dp, topEnd = 60.dp)
                 )
                 .padding(horizontal = 40.dp),
@@ -66,7 +53,6 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
         ) {
             Spacer(modifier = Modifier.height(35.dp))
 
-            // Título
             Text(
                 text = "¡RECUPERA TU",
                 color = Color.White,
@@ -84,9 +70,8 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // Burbuja de texto informativo (Cremita)
             Surface(
-                color = Color(0xFFD9D9B3), // Color hueso/cremita
+                color = Color(0xFFD9D9B3),
                 shape = RoundedCornerShape(35.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -112,18 +97,18 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Campo de texto (Input)
             TextField(
-                value = "",
-                onValueChange = {},
+                value = email,
+                onValueChange = { email = it },
+                placeholder = { Text("ejemplo@correo.com", color = Color.Gray) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),
                 shape = RoundedCornerShape(15.dp),
+                singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFD9D9B3),
                     unfocusedContainerColor = Color(0xFFD9D9B3),
-                    disabledContainerColor = Color(0xFFD9D9B3),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -131,9 +116,12 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
 
             Spacer(modifier = Modifier.height(35.dp))
 
-            // Botón "Enviar Código" (Dorado/Mostaza)
             Button(
-                onClick = onSendCodeClick,
+                onClick = {
+                    if (email.isNotEmpty()) {
+                        onSendCodeClick(email)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(65.dp),
@@ -152,12 +140,12 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
             }
         }
 
-        // 3. Botón de Regresar (Flecha arriba a la izquierda)
+        // 3. Botón de Regresar
         Surface(
             modifier = Modifier
                 .padding(top = 50.dp, start = 20.dp)
                 .size(45.dp),
-            color = Color.White.copy(alpha = 0.8f), // Blanco semitransparente
+            color = Color.White.copy(alpha = 0.8f),
             shape = RoundedCornerShape(50.dp)
         ) {
             IconButton(onClick = onBackClick) {
@@ -171,12 +159,10 @@ fun RecuperaPasswordScreen(onBackClick: () -> Unit, onSendCodeClick: () -> Unit)
     }
 }
 
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RecuperaPasswordPreview() {
     RumboAppTheme {
-        // Le pasamos llaves vacías porque en el Preview no necesitamos que navegue de verdad
         RecuperaPasswordScreen(
             onBackClick = { },
             onSendCodeClick = { }

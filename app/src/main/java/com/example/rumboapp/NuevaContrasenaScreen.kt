@@ -1,5 +1,6 @@
 package com.example.rumboapp
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -18,14 +20,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rumboapp.ui.theme.RumboAppTheme
+// Importación necesaria para la lógica de Firebase
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () -> Unit) {
+    // Variables originales mantenidas
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
+    // Inyección de lógica de Firebase y Contexto para mensajes
+    val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
+
     Box(modifier = Modifier.fillMaxSize()) {
-        // 1. Imagen de Fondo (La ciudad/pueblo)
+        // 1. Imagen de Fondo
         Image(
             painter = painterResource(id = R.drawable.fondo_cambio_contrasena),
             contentDescription = null,
@@ -42,7 +51,7 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
                 .padding(top = 350.dp)
                 .offset(y = (-30).dp)
                 .background(
-                    color = Color(0xFF2D4B1E), // Verde oscuro
+                    color = Color(0xFF2D4B1E),
                     shape = RoundedCornerShape(topStart = 60.dp, topEnd = 60.dp)
                 )
                 .padding(horizontal = 40.dp),
@@ -50,7 +59,6 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
         ) {
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Título
             Text(
                 text = "CONTRASEÑA",
                 color = Color.White,
@@ -68,7 +76,6 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Burbuja informativa (Cremita)
             Surface(
                 color = Color(0xFFD9D9B3),
                 shape = RoundedCornerShape(35.dp),
@@ -86,7 +93,6 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            // Campo: Nueva Contraseña
             Text(
                 text = "Nueva contraseña:",
                 color = Color.White,
@@ -111,7 +117,6 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Campo: Confirmar Contraseña
             Text(
                 text = "Confirmar contraseña:",
                 color = Color.White,
@@ -136,9 +141,25 @@ fun NuevaContrasenaScreen(onBackClick: () -> Unit, onConfirmPasswordClick: () ->
 
             Spacer(modifier = Modifier.height(35.dp))
 
-            // Botón Confirmar (Dorado/Mostaza)
+            // Botón con lógica de Firebase incorporada
             Button(
-                onClick = onConfirmPasswordClick,
+                onClick = {
+                    if (password.isNotEmpty() && password == confirmPassword) {
+                        // Actualización técnica en Firebase
+                        auth.currentUser?.updatePassword(password)
+                            ?.addOnSuccessListener {
+                                Toast.makeText(context, "Contraseña actualizada con éxito", Toast.LENGTH_SHORT).show()
+                                onConfirmPasswordClick() // Navegación al Login
+                            }
+                            ?.addOnFailureListener { e ->
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                    } else if (password != confirmPassword) {
+                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Por favor, completa los campos", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .height(65.dp),
