@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose) // Asegúrate de que diga alias y NO id
+    alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 }
 
@@ -41,7 +41,6 @@ android {
 }
 
 dependencies {
-    // LIBRERÍAS BASE DE ANDROID Y COMPOSE (FALTABAN ESTAS)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -51,6 +50,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // Coil for image loading
+    implementation(libs.coil.compose)
+
     // 1. NAVEGACIÓN
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
@@ -59,13 +61,14 @@ dependencies {
 
     // 3. PRODUCTOS FIREBASE
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation(libs.firebase.storage)
 
     // 4. CORRUTINAS
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    // LIBRERÍAS DE TEST (Opcionales para que no den error)
+    // LIBRERÍAS DE TEST
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

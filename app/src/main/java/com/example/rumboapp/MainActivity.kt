@@ -2,6 +2,7 @@ package com.example.rumboapp
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,8 +26,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
             RumboAppTheme {
                 val navController = rememberNavController()
                 val context = LocalContext.current
+                val profileViewModel: ProfileViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "welcome") {
 
@@ -63,50 +65,33 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("registro")
                             },
                             onLoginSuccess = {
-                                // Aquí podrías navegar a una Home futura
-                                navController.navigate("welcome") {
+                                // Al loguearse, cargamos los datos del perfil
+                                profileViewModel.fetchProfileData()
+                                navController.navigate("profile") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
                         )
                     }
 
-                    // 3. Pantalla de Recuperar Contraseña (MODIFICADO)
+                    // ... Otras pantallas de auth ...
                     composable("recupera_password") {
                         RecuperaPasswordScreen(
                             onBackClick = { navController.popBackStack() },
                             onNavigateToConfirmation = {
-                                // Navegamos a la pantalla de aviso de éxito
                                 navController.navigate("codigo_verificacion")
                             }
                         )
                     }
-
-                    // 4. Pantalla de Código de Verificación (Ahora pantalla de "Enlace Enviado")
                     composable("codigo_verificacion") {
                         CodigoVerificacionScreen(
                             onBackToMain = {
-                                // Regresa al Login y limpia el historial
                                 navController.navigate("login") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
                         )
                     }
-
-                    // 5. Pantalla de Nueva Contraseña (Opcional si usas link de Firebase)
-                    composable("nueva_contrasena") {
-                        NuevaContrasenaScreen(
-                            onBackClick = { navController.popBackStack() },
-                            onConfirmPasswordClick = {
-                                navController.navigate("login") {
-                                    popUpTo("login") { inclusive = true }
-                                }
-                            }
-                        )
-                    }
-
-                    // 6. Pantalla de Registro
                     composable("registro") {
                         RegistroScreen(
                             onBackClick = { navController.popBackStack() },
@@ -115,14 +100,154 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-
-                    // 7. Pantalla de Registro Completado
                     composable("registro_completado") {
                         RegistroCompletadoScreen(
                             onLoginClick = {
                                 navController.navigate("login") {
                                     popUpTo("welcome") { inclusive = true }
                                 }
+                            }
+                        )
+                    }
+
+                    // ── PERFIL USUARIO ──────────────────────────────
+                    composable("profile") {
+                        ProfileScreen(
+                            viewModel = profileViewModel,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { /* Navegar a Home si existe */ },
+                            onEditProfileClick = { navController.navigate("edit_profile") },
+                            onEditAddressClick = { navController.navigate("edit_address") },
+                            onAddAddressClick = { navController.navigate("add_address") },
+                            onAddPhotoClick = { navController.navigate("photo_picker") },
+                            onSelectAvatarClick = { navController.navigate("avatar_picker") }
+                        )
+                    }
+
+                    composable("edit_profile") {
+                        val usuario = profileViewModel.usuario
+                        EditProfileScreen(
+                            nombreInicial = usuario?.nombre ?: "",
+                            telefonoInicial = usuario?.telefono ?: "",
+                            emailInicial = usuario?.email ?: "",
+                            onBackClick = { navController.popBackStack() },
+                            onGuardarClick = { n, t, e ->
+                                profileViewModel.updateUsuario(n, t, e) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("edit_address") {
+                        // Editamos la primera dirección
+                        val dir = profileViewModel.usuario?.direcciones?.firstOrNull()
+                        EditAddressScreen(
+                            aliasInicial = dir?.alias ?: "",
+                            direccionInicial = dir?.descripcion ?: "",
+                            onBackClick = { navController.popBackStack() },
+                            onGuardarClick = { alias, ciudad, desc ->
+                                val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf()
+                                if (nuevasDirecciones.isNotEmpty()) {
+                                    nuevasDirecciones[0] = DireccionGuardada(alias, "$ciudad, $desc")
+                                } else {
+                                    nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc"))
+                                }
+                                profileViewModel.updateDirecciones(nuevasDirecciones) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("add_address") {
+                        EditAddressScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onGuardarClick = { alias, ciudad, desc ->
+                                val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf()
+                                nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc"))
+                                profileViewModel.updateDirecciones(nuevasDirecciones) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    // ── PERFIL CONDUCTOR ────────────────────────────
+                    composable("driver_profile") {
+                        DriverProfileScreen(
+                            viewModel = profileViewModel,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { /* Navegar a Home */ },
+                            onEditProfileClick = { navController.navigate("edit_driver_profile") },
+                            onEditVehicleClick = { navController.navigate("edit_vehicle") },
+                            onAddPhotoClick = { navController.navigate("photo_picker") }
+                        )
+                    }
+
+                    composable("edit_driver_profile") {
+                        val cond = profileViewModel.conductor
+                        EditDriverProfileScreen(
+                            nombreInicial = cond?.nombre ?: "",
+                            vehiculoInicial = cond?.vehiculo ?: "",
+                            emailInicial = cond?.email ?: "",
+                            licenciaInicial = cond?.licencia ?: "",
+                            onBackClick = { navController.popBackStack() },
+                            onGuardarClick = { n, v, e, l ->
+                                profileViewModel.updateConductor(n, v, e, l) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("edit_vehicle") {
+                        val veh = profileViewModel.conductor?.vehiculos?.firstOrNull()
+                        EditVehicleScreen(
+                            vehiculoInicial = veh?.alias ?: "",
+                            placaInicial = veh?.placa ?: "",
+                            modeloInicial = veh?.modelo ?: "",
+                            anioInicial = veh?.anio ?: "",
+                            onBackClick = { navController.popBackStack() },
+                            onGuardarClick = { v, p, m, a ->
+                                val nuevosVehiculos = listOf(VehiculoGuardado(v, p, m, a))
+                                profileViewModel.updateVehiculos(nuevosVehiculos) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    // ── COMUNES ─────────────────────────────────────
+                    composable("photo_picker") {
+                        PhotoPickerScreen(
+                            isLoading = profileViewModel.isLoading,
+                            onBackClick = { navController.popBackStack() },
+                            onPhotoSelected = { uri ->
+                                if (uri != null) {
+                                    profileViewModel.uploadProfilePhoto(uri) {
+                                        navController.navigate("profile_updated")
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    composable("avatar_picker") {
+                        AvatarPickerScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onAvatarSelected = { avatarName ->
+                                profileViewModel.updateAvatar(avatarName) {
+                                    navController.navigate("profile_updated")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("profile_updated") {
+                        ProfileUpdatedScreen(
+                            onContinueClick = {
+                                navController.popBackStack("profile", inclusive = false)
                             }
                         )
                     }
@@ -163,13 +288,5 @@ fun WelcomeScreen(onIngresarClick: () -> Unit) {
                 Text("INGRESAR", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun WelcomePreview() {
-    RumboAppTheme {
-        WelcomeScreen(onIngresarClick = { })
     }
 }
