@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
                             onHomeClick = { /* Navegar a Home si existe */ },
                             onEditProfileClick = { navController.navigate("edit_profile") },
                             onEditAddressClick = { navController.navigate("edit_address") },
+
                             onAddAddressClick = { navController.navigate("add_address") },
                             onAddPhotoClick = { navController.navigate("photo_picker") },
                             onSelectAvatarClick = { navController.navigate("avatar_picker") }
