@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -43,17 +44,18 @@ fun SillaScreen() {
             // BOTÓN VOLVER
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(45.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f))
-                    .clickable { /* Navegar atrás */ },
+                    .background(Color.White.copy(alpha = 0.8f))
+                    .clickable { /* Acción atrás */ },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_back), // Asegúrate de tener este drawable
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.White
+                    painter = painterResource(id = R.drawable.ic_back),
+                    contentDescription = "Atrás",
+                    // SE AÑADIÓ ESTA ROTACIÓN PARA QUE APUNTE A LA IZQUIERDA
+                    modifier = Modifier.size(24.dp).rotate(180f),
+                    tint = Color.Unspecified
                 )
             }
 
@@ -61,7 +63,7 @@ fun SillaScreen() {
             Text(
                 text = "ELIGE TU SILLA",
                 color = Color.White,
-                fontSize = 28.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold
             )
 
@@ -150,7 +152,7 @@ fun SillaScreen() {
                 text = if (sillaSeleccionada != -1) "CONFIRMAR ASIENTO ${sillaSeleccionada + 1}" else "CONFIRMAR ASIENTO",
                 color = verdeFondo,
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 20.sp
             )
         }
     }

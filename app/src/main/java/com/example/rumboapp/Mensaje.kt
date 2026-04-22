@@ -59,10 +59,10 @@ fun MensajeScreen() {
                 Text(
                     text = "Para que viajemos cómodos, recuerda:",
                     color = cremaAmarillo,
-                    fontSize = 26.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    lineHeight = 34.sp
+                    lineHeight = 36.sp
                 )
 
                 Spacer(modifier = Modifier.height(30.dp))
@@ -96,7 +96,7 @@ fun MensajeScreen() {
                 Text(
                     text = "¡Buen viaje hacia el Llano!",
                     color = cremaAmarillo,
-                    fontSize = 22.sp,
+                    fontSize = 27.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center
                 )

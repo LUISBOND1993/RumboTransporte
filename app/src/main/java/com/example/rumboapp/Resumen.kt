@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -29,7 +30,7 @@ fun ResumenScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(verdeFondo)
-            .padding(horizontal = 20.dp, vertical = 25.dp), // Padding vertical reducido
+            .padding(horizontal = 30.dp, vertical = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // --- HEADER ---
@@ -39,42 +40,43 @@ fun ResumenScreen() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(35.dp) // Reducido de 40 a 35
+                    .size(45.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f))
-                    .clickable { /* Volver */ },
+                    .background(Color.White.copy(alpha = 0.8f))
+                    .clickable { /* Acción atrás */ },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Atrás",
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    // SE AÑADIÓ ESTA ROTACIÓN PARA QUE APUNTE A LA IZQUIERDA
+                    modifier = Modifier.size(24.dp).rotate(180f),
+                    tint = Color.Unspecified
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp)) // Espacio reducido
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // --- TARJETA DE RESUMEN (Más compacta) ---
+        // --- TARJETA DE RESUMEN CON CÁPSULAS ---
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(15.dp))
                 .background(cremaTarjeta)
-                .padding(18.dp) // Padding interno reducido de 25 a 18
+                .padding(18.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_car_check),
                     contentDescription = null,
-                    modifier = Modifier.size(35.dp), // Reducido de 45 a 35
+                    modifier = Modifier.size(35.dp),
                     tint = cafeTexto
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Información del Viaje",
-                    fontSize = 20.sp, // Reducido de 24 a 20
+                    fontSize = 23.sp,
                     fontWeight = FontWeight.Bold,
                     color = cafeTexto
                 )
@@ -84,40 +86,56 @@ fun ResumenScreen() {
             HorizontalDivider(color = cafeTexto.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Filas con padding vertical menor (6.dp en lugar de 8.dp)
+            // Filas con la nueva estética de cápsula
             ResumenRowCompact(R.drawable.ic_location, "Origen:")
             ResumenRowCompact(R.drawable.ic_map_route, "Destino:")
-            ResumenRowCompact(R.drawable.ic_calendarioa, "Fecha de Viaje :")
-            ResumenRowCompact(R.drawable.ic_clock, "Hora de Viaje:")
+            ResumenRowCompact(R.drawable.ic_calendarioa, "Fecha:")
+            ResumenRowCompact(R.drawable.ic_clock, "Hora:")
             ResumenRowCompact(R.drawable.ic_seat_choice, "Silla:")
             ResumenRowCompact(R.drawable.ic_price_tag, "Precio:")
         }
 
-        // --- DUSTER (Tamaño medio para dejar espacio al botón) ---
+        // --- DUSTER ---
         Box(
             modifier = Modifier
-                .weight(1f) // Usa el espacio disponible dinámicamente
+                .weight(1f)
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            Box(modifier = Modifier.size(350.dp)) { // Tamaño controlado
-                Image(
-                    painter = painterResource(id = R.drawable.duster),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
-                )
-
-            }
+            Image(
+                painter = painterResource(id = R.drawable.duster),
+                contentDescription = null,
+                modifier = Modifier.size(600.dp),
+                contentScale = ContentScale.Fit
+            )
         }
 
-        // --- BOTÓN IR AL PAGO (Ahora siempre visible) ---
+        // --- BOTONES ---
         Button(
-            onClick = { /* Navegar */ },
+            onClick = { /* Ir al flujo de regreso */ },
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .height(55.dp),
             colors = ButtonDefaults.buttonColors(containerColor = cremaTarjeta),
+            shape = RoundedCornerShape(12.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+        ) {
+            Text(
+                text = "Apartar viaje de regreso",
+                color = cafeTexto,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { /* Ir a pagos */ },
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .height(55.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(12.dp),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
@@ -138,22 +156,45 @@ fun ResumenRowCompact(iconId: Int, label: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp), // Padding reducido para ahorrar espacio
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = iconId),
-            contentDescription = null,
-            modifier = Modifier.size(20.dp), // Iconos un poco más pequeños
-            tint = Color(0xFF2D2D2D)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = label,
-            fontSize = 16.sp, // Fuente ligeramente menor
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2D2D2D)
-        )
+        // Etiqueta e Icono
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = iconId),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = Color(0xFF2D2D2D)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = label,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2D2D2D)
+            )
+        }
+
+        // Cápsula blanca para la información
+        Box(
+            modifier = Modifier
+                .weight(1.2f)
+                .height(26.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(Color.White.copy(alpha = 0.8f))
+                .padding(horizontal = 10.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = "", // Espacio para el dato dinámico
+                fontSize = 13.sp,
+                color = Color.Black
+            )
+        }
     }
 }
 
