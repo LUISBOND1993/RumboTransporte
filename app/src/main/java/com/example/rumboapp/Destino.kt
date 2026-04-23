@@ -38,7 +38,6 @@ fun DestinoScreen(onBackClick: () -> Unit, onCiudadEscogida: (String) -> Unit) {
 
             Text("COMPRA TU PASAJE", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(vertical = 15.dp))
 
-            // Se usa el nombre local para evitar el error de referencia
             DestinoFilaOpcion("SOLO IDA", true, verdeFondoCuadro)
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -84,7 +83,6 @@ fun CajaCiudad(texto: String, colorFondo: Color, mostrarEstrella: Boolean = fals
     }
 }
 
-// Función agregada localmente para solucionar el error 'Unresolved reference'
 @Composable
 fun DestinoFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClick: () -> Unit = {}) {
     Row(

@@ -17,17 +17,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ViajeregresoScreen() {
+fun ViajeregresoScreen(
+    origen: String,
+    destino: String,
+    fecha: String,
+    onBackClick: () -> Unit,
+    onVerSillasClick: () -> Unit
+) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaCajas = Color(0xFFE8D596)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Fondo de Paisaje
         Image(
             painter = painterResource(id = R.drawable.fondo_paisaje),
             contentDescription = null,
@@ -41,20 +46,19 @@ fun ViajeregresoScreen() {
                 .padding(horizontal = 20.dp, vertical = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
+            // --- ENCABEZADO ---
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Box(
                     modifier = Modifier
                         .size(45.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.8f))
-                        .clickable { /* Acción atrás */ },
+                        .clickable { onBackClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "Atrás",
-                        // Mantenemos la rotación corregida
                         modifier = Modifier.size(24.dp).rotate(180f),
                         tint = Color.Unspecified
                     )
@@ -66,69 +70,89 @@ fun ViajeregresoScreen() {
                 )
             }
 
-            Text("SELECCIONA TU REGRESO", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(vertical = 15.dp))
+            Text(
+                text = "DETALLES DEL REGRESO",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(vertical = 15.dp)
+            )
 
-            // --- RESUMEN VIAJE ---
+            // --- CAJA DE RESUMEN (VERDE) ---
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = verdeOscuro.copy(alpha = 0.9f),
                 shape = RoundedCornerShape(15.dp)
             ) {
-                Column(modifier = Modifier.padding(15.dp)) {
-                    Text("TU VIAJE DE VUELTA", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = "TU REGRESO",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(id = R.drawable.ic_location), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Box(modifier = Modifier.fillMaxWidth().height(30.dp).clip(RoundedCornerShape(10.dp)).background(cremaCajas)) {
-                            Text("Acacías", modifier = Modifier.align(Alignment.Center), fontWeight = FontWeight.Bold, color = verdeOscuro)
-                        }
-                    }
+                    // Reutilizamos ResumenItem (asegúrate que esté accesible o definido abajo)
+                    ResumenItem(R.drawable.ic_location, origen, cremaCajas)
                     Spacer(modifier = Modifier.height(10.dp))
+                    ResumenItem(R.drawable.ic_destination, destino, cremaCajas)
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(id = R.drawable.ic_destination), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Box(modifier = Modifier.fillMaxWidth().height(30.dp).clip(RoundedCornerShape(10.dp)).background(cremaCajas)) {
-                            Text("Villavicencio", modifier = Modifier.align(Alignment.Center), fontWeight = FontWeight.Bold, color = verdeOscuro)
-                        }
-                    }
                     Spacer(modifier = Modifier.height(15.dp))
-
-                    Text("Fecha de regreso", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
-                    Row(modifier = Modifier.align(Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(id = R.drawable.ic_calendar), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(35.dp))
+                    Text(
+                        text = "Fecha de regreso",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_calendar),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(35.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Surface(modifier = Modifier.width(120.dp).height(25.dp), color = Color.White, shape = RoundedCornerShape(5.dp)) {
-                            Text("25/03/2026", fontSize = 14.sp, modifier = Modifier.wrapContentSize(Alignment.Center))
+                        Surface(
+                            modifier = Modifier.width(120.dp).height(25.dp),
+                            color = Color.White,
+                            shape = RoundedCornerShape(5.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(text = fecha, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                            }
                         }
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            // --- TÍTULO DE LISTA ---
             Surface(color = cremaCajas, shape = RoundedCornerShape(10.dp)) {
-                Text(" REGRESOS DISPONIBLES ", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
+                Text(
+                    text = " VIAJES DISPONIBLES ",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // --- LISTA DE VIAJES DE VUELTA CORREGIDA ---
+            // --- LISTA DE VIAJES ---
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                // Aquí quitamos el cuarto parámetro "4h Aprox" para que no de error
-                item { ViajeCardCorreccion("160.000", "02:00 pm", "06:00 pm") }
-                item { ViajeCardCorreccion("170.000", "05:00 pm", "09:00 pm") }
+                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
+                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // --- LOGO FINAL ---
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_rumbo),
-                    contentDescription = null,
-                    modifier = Modifier.size(70.dp)
-                )
+                Image(painter = painterResource(id = R.drawable.logo_rumbo), contentDescription = null, modifier = Modifier.size(90.dp))
                 Text("RUMBO", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
             }
         }
@@ -138,5 +162,11 @@ fun ViajeregresoScreen() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ViajeregresoPreview() {
-    ViajeregresoScreen()
+    ViajeregresoScreen(
+        origen = "VILLAVICENCIO",
+        destino = "ACACÍAS",
+        fecha = "25 de Marzo",
+        onBackClick = {},
+        onVerSillasClick = {}
+    )
 }

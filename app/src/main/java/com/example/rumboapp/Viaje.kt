@@ -21,12 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () -> Unit) {
+fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () -> Unit, onVerSillasClick: () -> Unit) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaCajas = Color(0xFFE8D596)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Fondo de Paisaje
         Image(
             painter = painterResource(id = R.drawable.fondo_paisaje),
             contentDescription = null,
@@ -40,7 +39,6 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
                 .padding(horizontal = 20.dp, vertical = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Box(
                     modifier = Modifier
@@ -71,61 +69,28 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
                 modifier = Modifier.padding(vertical = 15.dp)
             )
 
-            // --- RESUMEN VIAJE ---
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = verdeOscuro.copy(alpha = 0.9f),
                 shape = RoundedCornerShape(15.dp)
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
-                    Text(
-                        text = "TU VIAJE",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    Text(text = "TU VIAJE", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Spacer(modifier = Modifier.height(10.dp))
-
-                    // Origen dinámico
                     ResumenItem(R.drawable.ic_location, origen, cremaCajas)
                     Spacer(modifier = Modifier.height(10.dp))
-
-                    // Destino dinámico
                     ResumenItem(R.drawable.ic_destination, destino, cremaCajas)
                     Spacer(modifier = Modifier.height(15.dp))
-
-                    Text(
-                        text = "Fecha de salida",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-
+                    Text(text = "Fecha de salida", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Row(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(35.dp)
-                        )
+                        Icon(painter = painterResource(id = R.drawable.ic_calendar), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(35.dp))
                         Spacer(modifier = Modifier.width(10.dp))
-
-                        // SOLUCIÓN AL ERROR: Box dentro de Surface para centrar
-                        Surface(
-                            modifier = Modifier.width(120.dp).height(25.dp),
-                            color = Color.White,
-                            shape = RoundedCornerShape(5.dp)
-                        ) {
+                        Surface(modifier = Modifier.width(120.dp).height(25.dp), color = Color.White, shape = RoundedCornerShape(5.dp)) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = fecha,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black
-                                )
+                                Text(text = fecha, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                             }
                         }
                     }
@@ -134,30 +99,20 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
 
             Spacer(modifier = Modifier.height(20.dp))
             Surface(color = cremaCajas, shape = RoundedCornerShape(10.dp)) {
-                Text(
-                    text = " VIAJES DISPONIBLES ",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                )
+                Text(text = " VIAJES DISPONIBLES ", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp))
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // --- LISTA DE VIAJES ---
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm") }
-                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am") }
+                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
+                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_rumbo),
-                    contentDescription = null,
-                    modifier = Modifier.size(90.dp)
-                )
+                Image(painter = painterResource(id = R.drawable.logo_rumbo), contentDescription = null, modifier = Modifier.size(90.dp))
                 Text("RUMBO", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
             }
         }
@@ -167,90 +122,49 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
 @Composable
 fun ResumenItem(icono: Int, texto: String, colorFondo: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            painter = painterResource(id = icono),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(24.dp)
-        )
+        Icon(painter = painterResource(id = icono), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(10.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(colorFondo),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Text(
-                text = texto,
-                modifier = Modifier.padding(start = 10.dp),
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = Color.Black
-            )
+        Box(modifier = Modifier.fillMaxWidth().height(30.dp).clip(RoundedCornerShape(10.dp)).background(colorFondo), contentAlignment = Alignment.CenterStart) {
+            Text(text = texto, modifier = Modifier.padding(start = 10.dp), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
         }
     }
 }
 
 @Composable
-fun ViajeCardCorreccion(precio: String, salida: String, llegada: String) {
+fun ViajeCardCorreccion(precio: String, salida: String, llegada: String, onVerSillasClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color(0xFF2D461E).copy(alpha = 0.9f),
         shape = RoundedCornerShape(15.dp)
     ) {
         Box(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Precio $$precio",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
+                    Text(text = "Precio $$precio", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(15.dp))
-
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text("SALIDA", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Text(salida, color = Color.White)
                         }
-
                         Text(" ———> ", color = Color.White, modifier = Modifier.padding(horizontal = 10.dp))
-
                         Column(horizontalAlignment = Alignment.End) {
                             Text("LLEGADA", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Text(llegada, color = Color.White)
                         }
                     }
-
                     Spacer(modifier = Modifier.height(15.dp))
-
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
-                            modifier = Modifier.clickable { /* Ver Sillas */ },
+                            modifier = Modifier.clickable { onVerSillasClick() },
                             color = Color(0xFFE8D596),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(
-                                text = " Ver Sillas ",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text(text = " Ver Sillas ", modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
-
-                Image(
-                    painter = painterResource(id = R.drawable.ic_car_black),
-                    contentDescription = null,
-                    modifier = Modifier.size(90.dp).padding(start = 10.dp)
-                )
+                Image(painter = painterResource(id = R.drawable.ic_car_black), contentDescription = null, modifier = Modifier.size(90.dp).padding(start = 10.dp))
             }
         }
     }

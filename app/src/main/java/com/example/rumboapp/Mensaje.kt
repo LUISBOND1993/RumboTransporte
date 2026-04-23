@@ -18,17 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun MensajeScreen() {
+fun MensajeScreen(onBackClick: () -> Unit) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaAmarillo = Color(0xFFE8D596)
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Fondo con tu imagen de paisaje
         Image(
             painter = painterResource(id = R.drawable.fondo_paisaje),
             contentDescription = null,
@@ -36,17 +34,15 @@ fun MensajeScreen() {
             contentScale = ContentScale.Crop
         )
 
-        // Capa oscura para resaltar el texto
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp, bottom = 40.dp), // Espacio para que respire arriba y abajo
+                .padding(top = 80.dp, bottom = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // TARJETA: Más larga/estrecha (80% del ancho)
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
@@ -55,7 +51,6 @@ fun MensajeScreen() {
                     .padding(35.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // TÍTULO: Letra más grande (26sp)
                 Text(
                     text = "Para que viajemos cómodos, recuerda:",
                     color = cremaAmarillo,
@@ -74,7 +69,6 @@ fun MensajeScreen() {
                     "Paradas: Comunícalas directamente."
                 )
 
-                // LISTA: Letra más grande (20sp)
                 recordatorios.forEach { texto ->
                     Row(
                         modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
@@ -92,7 +86,6 @@ fun MensajeScreen() {
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // DESPEDIDA: Más grande (22sp)
                 Text(
                     text = "¡Buen viaje hacia el Llano!",
                     color = cremaAmarillo,
@@ -102,13 +95,13 @@ fun MensajeScreen() {
                 )
             }
 
-            // BOTÓN CAMPANA PARA VOLVER
+            // CAMPANA PARA VOLVER A SILLA
             Box(
                 modifier = Modifier
                     .size(65.dp)
                     .clip(CircleShape)
                     .background(verdeOscuro)
-                    .clickable { /* Acción para volver */ },
+                    .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -120,10 +113,4 @@ fun MensajeScreen() {
             }
         }
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun MensajePreview() {
-    MensajeScreen()
 }

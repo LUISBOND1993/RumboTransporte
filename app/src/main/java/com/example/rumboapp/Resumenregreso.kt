@@ -16,12 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ResumenregresoScreen() {
+fun ResumenregresoScreen(onBackClick: () -> Unit) {
     val verdeFondo = Color(0xFF2D461E)
     val cremaTarjeta = Color(0xFFE8D596)
     val cafeTexto = Color(0xFF2D2D2D)
@@ -43,13 +44,12 @@ fun ResumenregresoScreen() {
                     .size(45.dp)
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.8f))
-                    .clickable { /* Acción atrás */ },
+                    .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Atrás",
-                    // SE AÑADIÓ ESTA ROTACIÓN PARA QUE APUNTE A LA IZQUIERDA
                     modifier = Modifier.size(24.dp).rotate(180f),
                     tint = Color.Unspecified
                 )
@@ -58,12 +58,10 @@ fun ResumenregresoScreen() {
             Text(
                 text = "Resumen de Regreso",
                 color = Color.White,
-                fontSize = 30.sp, // Es un tamaño grande, ideal para títulos
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .fillMaxWidth() // Aseguramos que tenga espacio para centrarse
-                    .padding(vertical = 13.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
             )
         }
 
@@ -97,16 +95,16 @@ fun ResumenregresoScreen() {
             HorizontalDivider(color = cafeTexto.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Se asume que ResumenRowCompact está en Resumen.kt
+            // Ahora estas funciones sí funcionarán porque las definimos abajo
             ResumenRowCompact(R.drawable.ic_location, "Origen: Acacías")
-            ResumenRowCompact(R.drawable.ic_map_route, "Destino: Villavicencio")
-            ResumenRowCompact(R.drawable.ic_calendarioa, "Fecha de Regreso:")
-            ResumenRowCompact(R.drawable.ic_clock, "Hora de Regreso:")
-            ResumenRowCompact(R.drawable.ic_seat_choice, "Silla de Regreso:")
-            ResumenRowCompact(R.drawable.ic_price_tag, "Total a Pagar:")
+            ResumenRowCompact(R.drawable.ic_destination, "Destino: Villavicencio")
+            ResumenRowCompact(R.drawable.ic_calendar, "Fecha de Regreso: 25/03/2026")
+            ResumenRowCompact(R.drawable.ic_clock, "Hora de Regreso: 02:00 PM")
+            ResumenRowCompact(R.drawable.ic_seat_choice, "Silla de Regreso: Asiento 4")
+            ResumenRowCompact(R.drawable.ic_price_tag, "Total a Pagar: $160.000")
         }
 
-        // --- DUSTER (Espacio flexible) ---
+        // --- DUSTER ---
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -116,14 +114,14 @@ fun ResumenregresoScreen() {
             Image(
                 painter = painterResource(id = R.drawable.duster),
                 contentDescription = null,
-                modifier = Modifier.size(600.dp),
+                modifier = Modifier.size(350.dp),
                 contentScale = ContentScale.Fit
             )
         }
 
-        // --- ÚNICO BOTÓN: CONFIRMAR RESERVA DE MI VIAJE ---
+        // --- BOTÓN: CONFIRMAR ---
         Button(
-            onClick = { /* Acción final de reserva */ },
+            onClick = { /* Acción final */ },
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .height(60.dp),
@@ -134,19 +132,42 @@ fun ResumenregresoScreen() {
             Text(
                 text = "CONFIRMAR RESERVA DE MI VIAJE",
                 color = cafeTexto,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.fillMaxWidth(), // Para que ocupe todo el ancho
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center // Centra el contenido
+                textAlign = TextAlign.Center
             )
         }
-
         Spacer(modifier = Modifier.height(20.dp))
+    }
+}
+
+// ESTA ES LA FUNCIÓN QUE TE FALTABA
+@Composable
+fun ResumenRowCompact(iconId: Int, text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = iconId),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color(0xFF2D2D2D)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            fontSize = 15.sp,
+            color = Color(0xFF2D2D2D),
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
 @Preview(showSystemUi = true)
 @Composable
 fun ResumenregresoPreview() {
-    ResumenregresoScreen()
+    ResumenregresoScreen(onBackClick = {})
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +24,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CalendarioregresoScreen(
     onDiaSeleccionado: (Int) -> Unit,
+    onIrADestino: () -> Unit,
+    ciudadDestino: String,
+    direccionOrigen: String,
+    onOrigenCambiado: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
     val verdeFondoCalendario = Color(0xFF2D461E)
@@ -71,28 +77,41 @@ fun CalendarioregresoScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "COMPRA TU PASAJE",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.Black
-            )
-
+            Text(text = "COMPRA TU PASAJE", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
             Spacer(modifier = Modifier.height(20.dp))
 
-            RegFilaOpcion("SOLO IDA", false, verdeFondoCalendario) { /* acción */ }
+            RegFilaOpcion("SOLO IDA", false, verdeFondoCalendario) { }
             Spacer(modifier = Modifier.height(10.dp))
-            RegFilaOpcion("IDA Y REGRESO", true, verdeFondoCalendario) { /* acción */ }
+            RegFilaOpcion("IDA Y REGRESO", true, verdeFondoCalendario) { }
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            RegCajaDireccion("DIRECCIÓN DE ORIGEN", verdeFondoCalendario) { /* acción */ }
+            // DIRECCIÓN ORIGEN (Input de texto)
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text("DIRECCIÓN DE ORIGEN", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Surface(modifier = Modifier.fillMaxWidth().height(35.dp), color = verdeFondoCalendario, shape = RoundedCornerShape(22.dp)) {
+                    BasicTextField(
+                        value = direccionOrigen,
+                        onValueChange = onOrigenCambiado,
+                        textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp),
+                        cursorBrush = SolidColor(Color.White),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
+                        decorationBox = { innerTextField ->
+                            if (direccionOrigen.isEmpty()) Text("Escribe tu dirección...", color = Color.White.copy(0.6f), fontSize = 14.sp)
+                            innerTextField()
+                        }
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
-            RegCajaDireccion("INGRESA TU DESTINO:", verdeFondoCalendario) { /* acción */ }
+
+            // DESTINO (Botón)
+            RegCajaDireccionBoton("INGRESA TU DESTINO:", if(ciudadDestino.isEmpty()) "Seleccionar..." else ciudadDestino, verdeFondoCalendario) {
+                onIrADestino()
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
-
             Text("FECHA DE REGRESO", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
 
             Row(modifier = Modifier.padding(vertical = 10.dp)) {
@@ -112,22 +131,17 @@ fun CalendarioregresoScreen(
                             Text(it, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     val totalDias = 31
                     val columnas = 7
                     val filas = (totalDias + columnas - 1) / columnas
-
                     Column {
                         for (fila in 0 until filas) {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                                 for (col in 0 until columnas) {
                                     val dia = fila * columnas + col + 1
                                     if (dia <= totalDias) {
-                                        RegItemDia(dia, cremaCirculo, verdeFondoCalendario) {
-                                            onDiaSeleccionado(dia)
-                                        }
+                                        RegItemDia(dia, cremaCirculo, verdeFondoCalendario) { onDiaSeleccionado(dia) }
                                     } else {
                                         Spacer(modifier = Modifier.size(35.dp))
                                     }
@@ -142,8 +156,6 @@ fun CalendarioregresoScreen(
     }
 }
 
-// ── COMPONENTES LOCALES PARA EVITAR CONFLICTOS (Regreso) ──
-
 @Composable
 fun RegFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClick: () -> Unit) {
     Row(
@@ -157,7 +169,7 @@ fun RegFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClick: (
 }
 
 @Composable
-fun RegCajaDireccion(label: String, color: Color, onClick: () -> Unit) {
+fun RegCajaDireccionBoton(label: String, valor: String, color: Color, onClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         Surface(
@@ -166,7 +178,7 @@ fun RegCajaDireccion(label: String, color: Color, onClick: () -> Unit) {
             shape = RoundedCornerShape(22.dp)
         ) {
             Box(contentAlignment = Alignment.CenterStart) {
-                Text("Seleccionar...", color = Color.White.copy(0.6f), modifier = Modifier.padding(start = 16.dp))
+                Text(valor, color = Color.White, modifier = Modifier.padding(start = 16.dp), fontSize = 14.sp)
             }
         }
     }
