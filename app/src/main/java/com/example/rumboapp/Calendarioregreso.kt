@@ -86,7 +86,7 @@ fun CalendarioregresoScreen(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // DIRECCIÓN ORIGEN (Input de texto)
+
             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 Text("DIRECCIÓN DE ORIGEN", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 Surface(modifier = Modifier.fillMaxWidth().height(35.dp), color = verdeFondoCalendario, shape = RoundedCornerShape(22.dp)) {

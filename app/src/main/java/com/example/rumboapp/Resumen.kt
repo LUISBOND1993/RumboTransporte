@@ -40,7 +40,7 @@ fun ResumenScreen(
             .padding(horizontal = 30.dp, vertical = 50.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- HEADER ---
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -73,7 +73,7 @@ fun ResumenScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- TARJETA DE INFORMACIÓN ---
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,7 +111,7 @@ fun ResumenScreen(
             ResumenRow(R.drawable.ic_price_tag, "Precio:", "$160.000")
         }
 
-        // --- IMAGEN DE LA CAMIONETA ---
+
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -126,7 +126,7 @@ fun ResumenScreen(
             )
         }
 
-        // --- BOTONES ---
+
         Button(
             onClick = { onRegresoClick() },
             modifier = Modifier.fillMaxWidth(0.9f).height(55.dp),

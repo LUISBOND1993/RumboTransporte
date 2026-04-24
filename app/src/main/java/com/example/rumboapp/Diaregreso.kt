@@ -68,7 +68,7 @@ fun DiaregresoScreen(ciudadDestino: String, onBackClick: () -> Unit, onDiaConfir
                 modifier = Modifier.padding(vertical = 20.dp)
             )
 
-            // Usando los componentes con prefijo local para evitar errores
+
             DiaRegFilaOpcion("SOLO IDA", seleccionado = false, verdeFondoCalendario)
             DiaRegFilaOpcion("IDA Y REGRESO", seleccionado = true, verdeFondoCalendario)
 
@@ -126,7 +126,7 @@ fun DiaregresoScreen(ciudadDestino: String, onBackClick: () -> Unit, onDiaConfir
     }
 }
 
-// ── COMPONENTES LOCALES PARA Diaregreso.kt ──
+
 
 @Composable
 fun DiaRegFilaOpcion(texto: String, seleccionado: Boolean, color: Color) {

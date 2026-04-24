@@ -95,7 +95,7 @@ fun MensajeScreen(onBackClick: () -> Unit) {
                 )
             }
 
-            // CAMPANA PARA VOLVER A SILLA
+
             Box(
                 modifier = Modifier
                     .size(65.dp)

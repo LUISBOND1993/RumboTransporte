@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // --- AUTH & PERFIL (SIN CAMBIOS) ---
+
                     composable("recupera_password") { RecuperaPasswordScreen(onBackClick = { navController.popBackStack() }, onNavigateToConfirmation = { navController.navigate("codigo_verificacion") }) }
                     composable("codigo_verificacion") { CodigoVerificacionScreen(onBackToMain = { navController.navigate("login") { popUpTo("login") { inclusive = true } } }) }
                     composable("registro") { RegistroScreen(onBackClick = { navController.popBackStack() }, onCreateAccountClick = { navController.navigate("registro_completado") }) }
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
                     composable("avatar_picker") { AvatarPickerScreen(onBackClick = { navController.popBackStack() }, onAvatarSelected = { avatarName -> profileViewModel.updateAvatar(avatarName) { navController.navigate("profile_updated") } }) }
                     composable("profile_updated") { ProfileUpdatedScreen(onContinueClick = { navController.popBackStack("profile", inclusive = false) }) }
 
-                    // --- FLUJO DE VIAJE (IDA) ---
+
                     composable("calendario") {
                         CalendarioScreen(
                             onDiaSeleccionado = { dia -> diaSeleccionado = dia; navController.navigate("viaje") },
@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // --- FLUJO DE VIAJE (REGRESO) CORREGIDO ---
+
                     composable("calendario_regreso") {
                         CalendarioregresoScreen(
                             onDiaSeleccionado = { dia ->

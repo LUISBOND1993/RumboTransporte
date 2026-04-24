@@ -73,7 +73,7 @@ fun SillaregresoScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // --- MAPA DE SILLAS (EL VEHÍCULO) ---
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,7 +122,7 @@ fun SillaregresoScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- BOTÓN DE CONFIRMACIÓN ---
+
         Button(
             onClick = { if (sillaSeleccionada != -1) onConfirmarClick(sillaSeleccionada) },
             modifier = Modifier

@@ -46,7 +46,7 @@ fun ViajeregresoScreen(
                 .padding(horizontal = 20.dp, vertical = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- ENCABEZADO ---
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Box(
                     modifier = Modifier
@@ -77,7 +77,7 @@ fun ViajeregresoScreen(
                 modifier = Modifier.padding(vertical = 15.dp)
             )
 
-            // --- CAJA DE RESUMEN (VERDE) ---
+
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = verdeOscuro.copy(alpha = 0.9f),
@@ -130,7 +130,7 @@ fun ViajeregresoScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- TÍTULO DE LISTA ---
+
             Surface(color = cremaCajas, shape = RoundedCornerShape(10.dp)) {
                 Text(
                     text = " VIAJES DISPONIBLES ",

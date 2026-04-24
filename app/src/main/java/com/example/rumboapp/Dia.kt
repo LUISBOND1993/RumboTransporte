@@ -43,7 +43,7 @@ fun DiaScreen(ciudadDestino: String, onBackClick: () -> Unit, onDiaConfirmado: (
                 .padding(horizontal = 25.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header: Botón atrás y Usuario
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -166,7 +166,7 @@ fun DiaScreen(ciudadDestino: String, onBackClick: () -> Unit, onDiaConfirmado: (
     }
 }
 
-// --- COMPONENTES AUXILIARES ---
+
 
 @Composable
 fun DiaIdaFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClick: () -> Unit) {
