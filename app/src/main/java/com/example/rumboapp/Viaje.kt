@@ -105,8 +105,8 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
             Spacer(modifier = Modifier.height(15.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
-                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am", onVerSillasClick) }
+                item { ViajeCardCorreccion("68.000", "10:00 am", "2:00 pm", onVerSillasClick) }
+                item { ViajeCardCorreccion("68.000", "8:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))

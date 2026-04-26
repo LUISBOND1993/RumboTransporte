@@ -21,7 +21,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.rumboapp.data.InfoTiquete
+import com.example.rumboapp.data.MetodoPago
 import com.example.rumboapp.ui.theme.RumboAppTheme
+import com.example.rumboapp.viewmodel.PagoUiState
+import com.example.rumboapp.viewmodel.PagoViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,7 @@ class MainActivity : ComponentActivity() {
             RumboAppTheme {
                 val navController = rememberNavController()
                 val profileViewModel: ProfileViewModel = viewModel()
+                val pagoViewModel: PagoViewModel = viewModel()
 
                 // --- ESTADOS GLOBALES (IDA) ---
                 var ciudadSeleccionada by remember { mutableStateOf("") }
@@ -42,6 +47,26 @@ class MainActivity : ComponentActivity() {
                 var ciudadRegreso by remember { mutableStateOf("") }
                 var diaRegreso by remember { mutableIntStateOf(25) }
                 var sillaRegreso by remember { mutableIntStateOf(-1) }
+
+                // --- OBSERVADOR DE ESTADO DE PAGO ---
+                val pagoState by pagoViewModel.uiState.collectAsState()
+
+                LaunchedEffect(pagoState) {
+                    when (val state = pagoState) {
+                        is PagoUiState.Exitoso -> {
+                            navController.navigate("pago_exitoso") {
+                                popUpTo("pago_seleccion") { inclusive = true }
+                            }
+                        }
+                        is PagoUiState.Rechazado -> {
+                            navController.navigate("pago_rechazado/${state.motivo}/${state.codigo}")
+                        }
+                        is PagoUiState.Error -> {
+                            // Podrías mostrar un Toast o un diálogo de error
+                        }
+                        else -> Unit
+                    }
+                }
 
                 NavHost(navController = navController, startDestination = "welcome") {
 
@@ -132,7 +157,18 @@ class MainActivity : ComponentActivity() {
                             fecha = "$diaSeleccionado de Marzo",
                             sillaNumero = if (sillaEscogida != -1) sillaEscogida.toString() else "N/A",
                             onBackClick = { navController.popBackStack() },
-                            onRegresoClick = { navController.navigate("calendario_regreso") }
+                            onRegresoClick = { navController.navigate("calendario_regreso") },
+                            onConfirmarPagarClick = {
+                                pagoViewModel.setTiquete(InfoTiquete(
+                                    origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
+                                    destino = ciudadSeleccionada,
+                                    fecha = "$diaSeleccionado de Marzo",
+                                    pasajeros = 1,
+                                    silla = sillaEscogida.toString(),
+                                    total = 68000
+                                ))
+                                navController.navigate("pago_seleccion")
+                            }
                         )
                     }
 
@@ -192,12 +228,108 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("calendario") {
                                     popUpTo("calendario") { inclusive = true }
                                 }
+                            },
+                            onConfirmarPagarClick = {
+                                pagoViewModel.setTiquete(InfoTiquete(
+                                    origen = ciudadRegreso,
+                                    destino = ciudadSeleccionada,
+                                    fecha = "$diaRegreso de Marzo",
+                                    pasajeros = 1,
+                                    silla = sillaRegreso.toString(),
+                                    total = 68000
+                                ))
+                                navController.navigate("pago_seleccion")
                             }
                         )
                     }
 
                     composable("mensaje") {
                         MensajeScreen(onBackClick = { navController.popBackStack() })
+                    }
+
+                    // --- FLUJO DE PAGOS ---
+                    composable("pago_seleccion") {
+                        PagoTiqueteScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onContinuarClick = { metodo ->
+                                when (metodo) {
+                                    MetodoPago.TARJETA -> navController.navigate("pago_tarjeta")
+                                    MetodoPago.PSE -> navController.navigate("pago_pse")
+                                    MetodoPago.EFECTIVO -> navController.navigate("pago_efectivo")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("pago_tarjeta") {
+                        DatosTarjetaScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onPagarClick = { num, nom, fec, cvv, cuo ->
+                                pagoViewModel.pagarConTarjeta(num, nom, fec, cvv, cuo)
+                            }
+                        )
+                    }
+
+                    composable("pago_pse") {
+                        PagoPSEScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onIrAlBancoClick = { ban, tc, tp, doc ->
+                                pagoViewModel.pagarConPSE(ban, tc, tp, doc)
+                            }
+                        )
+                    }
+
+                    composable("pago_efectivo") {
+                        PagoEfectivoScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onConfirmarClick = { pagoViewModel.confirmarEfectivo() },
+                            onSeleccionarOtroClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable("pago_exitoso") {
+                        val state = pagoState as? PagoUiState.Exitoso
+                        PagoExitosoScreen(
+                            referencia = state?.referencia ?: "",
+                            total = state?.total ?: 0L,
+                            metodoPago = state?.metodoPago ?: MetodoPago.TARJETA,
+                            onVerResumenClick = { 
+                                navController.navigate("calendario") { popUpTo("welcome") { inclusive = false } }
+                            },
+                            onVolverInicioClick = {
+                                navController.navigate("calendario") { popUpTo("welcome") { inclusive = false } }
+                            }
+                        )
+                    }
+
+                    composable("pago_rechazado/{motivo}/{codigo}") { backStackEntry ->
+                        val motivo = backStackEntry.arguments?.getString("motivo") ?: ""
+                        val codigo = backStackEntry.arguments?.getString("codigo") ?: ""
+                        PagoRechazadoScreen(
+                            motivo = motivo,
+                            codigo = codigo,
+                            onIntentarNuevoClick = { 
+                                pagoViewModel.resetearEstado()
+                                navController.popBackStack() 
+                            },
+                            onSeleccionarOtroClick = {
+                                pagoViewModel.resetearEstado()
+                                navController.navigate("pago_seleccion") {
+                                    popUpTo("pago_seleccion") { inclusive = true }
+                                }
+                            }
+                        )
                     }
                 }
             }

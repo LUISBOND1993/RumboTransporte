@@ -92,7 +92,6 @@ fun ViajeregresoScreen(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Reutilizamos ResumenItem (asegúrate que esté accesible o definido abajo)
                     ResumenItem(R.drawable.ic_location, origen, cremaCajas)
                     Spacer(modifier = Modifier.height(10.dp))
                     ResumenItem(R.drawable.ic_destination, destino, cremaCajas)
@@ -144,8 +143,8 @@ fun ViajeregresoScreen(
 
             // --- LISTA DE VIAJES ---
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
-                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am", onVerSillasClick) }
+                item { ViajeCardCorreccion("68.000", "10:00 am", "2:00 pm", onVerSillasClick) }
+                item { ViajeCardCorreccion("68.000", "8:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))

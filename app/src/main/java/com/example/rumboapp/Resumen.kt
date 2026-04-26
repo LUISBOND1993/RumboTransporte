@@ -25,9 +25,10 @@ fun ResumenScreen(
     origen: String,
     destino: String,
     fecha: String,
-    sillaNumero: String, // NUEVO: Para recibir el número de silla desde el Main
+    sillaNumero: String,
     onBackClick: () -> Unit,
-    onRegresoClick: () -> Unit
+    onRegresoClick: () -> Unit,
+    onConfirmarPagarClick: () -> Unit // NUEVO: Callback para iniciar el flujo de pago
 ) {
     val verdeFondo = Color(0xFF2D461E)
     val cremaTarjeta = Color(0xFFE8D596)
@@ -101,14 +102,12 @@ fun ResumenScreen(
             HorizontalDivider(color = cafeTexto.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Datos que vienen del flujo de la App
             ResumenRow(R.drawable.ic_location, "Origen:", origen)
             ResumenRow(R.drawable.ic_destination, "Destino:", destino)
             ResumenRow(R.drawable.ic_calendar, "Fecha:", fecha)
             ResumenRow(R.drawable.ic_clock, "Hora:", "08:00 AM")
-            // ACTUALIZADO: Ahora muestra el número de silla real
             ResumenRow(R.drawable.ic_seat_choice, "Silla:", "Asiento $sillaNumero")
-            ResumenRow(R.drawable.ic_price_tag, "Precio:", "$160.000")
+            ResumenRow(R.drawable.ic_price_tag, "Precio:", "$68.000") // Actualizado para ser consistente con el módulo de pagos
         }
 
 
@@ -140,7 +139,7 @@ fun ResumenScreen(
         Spacer(modifier = Modifier.height(15.dp))
 
         Button(
-            onClick = { /* Lógica de pago */ },
+            onClick = { onConfirmarPagarClick() }, // Usamos el nuevo callback
             modifier = Modifier.fillMaxWidth(0.9f).height(55.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(12.dp),
@@ -191,6 +190,7 @@ fun ResumenPreview() {
         fecha = "20 de Marzo",
         sillaNumero = "2",
         onBackClick = {},
-        onRegresoClick = {}
+        onRegresoClick = {},
+        onConfirmarPagarClick = {}
     )
 }
