@@ -306,3 +306,4 @@ fun WelcomeScreen(onIngresarClick: () -> Unit) {
         }
     }
 }
+// version final para mi compañero
