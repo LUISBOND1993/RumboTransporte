@@ -1,34 +1,14 @@
 package com.example.rumboapp
 
-// IMPORTACIONES DE FIREBASE
+// IMPORTACIONES
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,12 +17,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+// Colores personalizados
 private val VerdeOscuro = Color(0xFF1B3011)
 private val ColorCremita = Color(0xFFE2E2BD)
 private val ColorDorado = Color(0xFFD4AF37)
@@ -50,10 +33,8 @@ private val ColorDorado = Color(0xFFD4AF37)
 @Composable
 fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
     val context = LocalContext.current
-    val auth = FirebaseAuth.getInstance()
-    val db = FirebaseFirestore.getInstance()
 
-    // Variables de estado originales
+    // Estados para los campos
     var nombre by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
@@ -61,11 +42,10 @@ fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
     var telefono by remember { mutableStateOf("") }
     var fechaNacimiento by remember { mutableStateOf("") }
     var identificacion by remember { mutableStateOf("") }
-
-    // Estado para controlar la carga
     var isLoading by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Imagen de fondo
         Image(
             painter = painterResource(id = R.drawable.fondo_registro),
             contentDescription = null,
@@ -107,13 +87,11 @@ fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                    // LÓGICA DE ENVÍO DE DATOS
                     if (isLoading) {
                         CircularProgressIndicator(color = ColorDorado)
                     } else {
                         Button(
                             onClick = {
-                                // 1. Validaciones de negocio
                                 if (email.isEmpty() || contrasena.isEmpty() || nombre.isEmpty()) {
                                     Toast.makeText(context, "Llenar campos obligatorios (*)", Toast.LENGTH_SHORT).show()
                                     return@Button
@@ -125,12 +103,13 @@ fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
 
                                 isLoading = true
 
-                                // 2. Crear usuario en Auth
+                                // Lógica de Firebase
+                                val auth = FirebaseAuth.getInstance()
+                                val db = FirebaseFirestore.getInstance()
+
                                 auth.createUserWithEmailAndPassword(email.trim(), contrasena)
                                     .addOnSuccessListener { authResult ->
                                         val uid = authResult.user?.uid ?: ""
-
-                                        // 3. Preparar datos para Firestore (CRUD - Create)
                                         val usuarioMap = hashMapOf(
                                             "uid" to uid,
                                             "nombre" to nombre,
@@ -142,12 +121,11 @@ fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
                                             "fechaCreacion" to com.google.firebase.Timestamp.now()
                                         )
 
-                                        // 4. Guardar en Firestore
                                         db.collection("usuarios").document(uid)
                                             .set(usuarioMap)
                                             .addOnSuccessListener {
                                                 isLoading = false
-                                                onCreateAccountClick() // Navega al éxito
+                                                onCreateAccountClick()
                                             }
                                             .addOnFailureListener { e ->
                                                 isLoading = false
@@ -170,13 +148,18 @@ fun RegistroScreen(onBackClick: () -> Unit, onCreateAccountClick: () -> Unit) {
             }
         }
 
+        // Botón de atrás circular
         Surface(
             modifier = Modifier.padding(top = 40.dp, start = 20.dp).size(45.dp),
             color = Color.White.copy(alpha = 0.8f),
             shape = RoundedCornerShape(50.dp)
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(painter = painterResource(id = android.R.drawable.ic_menu_revert), contentDescription = "Atrás", tint = Color.Black)
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_revert),
+                    contentDescription = "Atrás",
+                    tint = Color.Black
+                )
             }
         }
     }
@@ -197,8 +180,15 @@ fun CampoDeTextoRegistro(titulo: String, valor: String, alCambiar: (String) -> U
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
-            visualTransformation = if (esContrasena) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+            visualTransformation = if (esContrasena) PasswordVisualTransformation() else VisualTransformation.None,
             singleLine = true
         )
     }
+}
+
+// --- VISTA PREVIA PARA EL PANEL SPLIT ---
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun RegistroScreenPreview() {
+    RegistroScreen(onBackClick = {}, onCreateAccountClick = {})
 }

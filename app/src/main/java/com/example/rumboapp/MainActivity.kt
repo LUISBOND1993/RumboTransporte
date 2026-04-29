@@ -35,12 +35,18 @@ class MainActivity : ComponentActivity() {
                 // --- ESTADOS GLOBALES (IDA) ---
                 var ciudadSeleccionada by remember { mutableStateOf("") }
                 var diaSeleccionado by remember { mutableIntStateOf(20) }
+                var mesSeleccionado by remember { mutableStateOf("Marzo") }
                 var direccionOrigen by remember { mutableStateOf("") }
                 var sillaEscogida by remember { mutableIntStateOf(-1) }
+
+                // ESTADOS PARA PRECIO Y HORA DINÁMICOS
+                var precioSeleccionado by remember { mutableStateOf("$160.000") }
+                var horaSeleccionada by remember { mutableStateOf("08:00 AM") }
 
                 // --- ESTADOS GLOBALES (REGRESO) ---
                 var ciudadRegreso by remember { mutableStateOf("") }
                 var diaRegreso by remember { mutableIntStateOf(25) }
+                var mesRegreso by remember { mutableStateOf("Abril") }
                 var sillaRegreso by remember { mutableIntStateOf(-1) }
 
                 NavHost(navController = navController, startDestination = "welcome") {
@@ -67,26 +73,30 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
+                    // --- RUTAS DE PERFIL Y REGISTRO ---
                     composable("recupera_password") { RecuperaPasswordScreen(onBackClick = { navController.popBackStack() }, onNavigateToConfirmation = { navController.navigate("codigo_verificacion") }) }
                     composable("codigo_verificacion") { CodigoVerificacionScreen(onBackToMain = { navController.navigate("login") { popUpTo("login") { inclusive = true } } }) }
                     composable("registro") { RegistroScreen(onBackClick = { navController.popBackStack() }, onCreateAccountClick = { navController.navigate("registro_completado") }) }
                     composable("registro_completado") { RegistroCompletadoScreen(onLoginClick = { navController.navigate("login") { popUpTo("welcome") { inclusive = true } } }) }
                     composable("profile") { ProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_profile") }, onEditAddressClick = { navController.navigate("edit_address") }, onAddAddressClick = { navController.navigate("add_address") }, onAddPhotoClick = { navController.navigate("photo_picker") }, onSelectAvatarClick = { navController.navigate("avatar_picker") }) }
                     composable("edit_profile") { val usuario = profileViewModel.usuario; EditProfileScreen(nombreInicial = usuario?.nombre ?: "", telefonoInicial = usuario?.telefono ?: "", emailInicial = usuario?.email ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, t, e -> profileViewModel.updateUsuario(n, t, e) { navController.navigate("profile_updated") } }) }
-                    composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
-                    composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
                     composable("driver_profile") { DriverProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_driver_profile") }, onEditVehicleClick = { navController.navigate("edit_vehicle") }, onAddPhotoClick = { navController.navigate("photo_picker") }) }
                     composable("edit_driver_profile") { val cond = profileViewModel.conductor; EditDriverProfileScreen(nombreInicial = cond?.nombre ?: "", vehiculoInicial = cond?.vehiculo ?: "", emailInicial = cond?.email ?: "", licenciaInicial = cond?.licencia ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, v, e, l -> profileViewModel.updateConductor(n, v, e, l) { navController.navigate("profile_updated") } }) }
-                    composable("edit_vehicle") { val veh = profileViewModel.conductor?.vehiculos?.firstOrNull(); EditVehicleScreen(vehiculoInicial = veh?.alias ?: "", placaInicial = veh?.placa ?: "", modeloInicial = veh?.modelo ?: "", anioInicial = veh?.anio ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { v, p, m, a -> val nuevosVehiculos = listOf(VehiculoGuardado(v, p, m, a)); profileViewModel.updateVehiculos(nuevosVehiculos) { navController.navigate("profile_updated") } }) }
+                    composable("edit_vehicle") { val veh = profileViewModel.conductor?.vehiculos?.firstOrNull(); EditVehicleScreen(vehiculoInicial = veh?.alias ?: "", placaInicial = veh?.placa ?: "", modeloInicial = veh?.modelo ?: "", anioInicial = veh?.anio ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { v, p, m, a -> val nuevosVehiculos = listOf(com.example.rumboapp.VehiculoGuardado(v, p, m, a)); profileViewModel.updateVehiculos(nuevosVehiculos) { navController.navigate("profile_updated") } }) }
                     composable("photo_picker") { PhotoPickerScreen(isLoading = profileViewModel.isLoading, onBackClick = { navController.popBackStack() }, onPhotoSelected = { uri -> if (uri != null) profileViewModel.uploadProfilePhoto(uri) { navController.navigate("profile_updated") } }) }
                     composable("avatar_picker") { AvatarPickerScreen(onBackClick = { navController.popBackStack() }, onAvatarSelected = { avatarName -> profileViewModel.updateAvatar(avatarName) { navController.navigate("profile_updated") } }) }
                     composable("profile_updated") { ProfileUpdatedScreen(onContinueClick = { navController.popBackStack("profile", inclusive = false) }) }
 
-
+                    // --- FLUJO DE VIAJE IDA ---
                     composable("calendario") {
                         CalendarioScreen(
-                            onDiaSeleccionado = { dia -> diaSeleccionado = dia; navController.navigate("viaje") },
+                            onDiaSeleccionado = { dia, mes ->
+                                diaSeleccionado = dia
+                                mesSeleccionado = mes
+                                navController.navigate("viaje")
+                            },
                             onIrADestino = { navController.navigate("destino") },
                             ciudadDestino = ciudadSeleccionada,
                             direccionOrigen = direccionOrigen,
@@ -95,22 +105,20 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("destino") {
-                        DestinoScreen(
-                            onBackClick = { navController.popBackStack() },
-                            onCiudadEscogida = { ciudad ->
-                                ciudadSeleccionada = ciudad
-                                navController.popBackStack()
-                            }
-                        )
+                        DestinoScreen(onBackClick = { navController.popBackStack() }, onCiudadEscogida = { ciudad -> ciudadSeleccionada = ciudad; navController.popBackStack() })
                     }
 
                     composable("viaje") {
                         ViajeScreen(
                             origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
                             destino = ciudadSeleccionada.ifEmpty { "DESTINO" },
-                            fecha = "$diaSeleccionado de Marzo",
+                            fecha = "$diaSeleccionado de $mesSeleccionado",
                             onBackClick = { navController.popBackStack() },
-                            onVerSillasClick = { navController.navigate("silla") }
+                            onVerSillasClick = { precio, hora ->
+                                precioSeleccionado = precio
+                                horaSeleccionada = hora
+                                navController.navigate("silla")
+                            }
                         )
                     }
 
@@ -118,10 +126,7 @@ class MainActivity : ComponentActivity() {
                         SillaScreen(
                             onBackClick = { navController.popBackStack() },
                             onBellClick = { navController.navigate("mensaje") },
-                            onConfirmarClick = { numero ->
-                                sillaEscogida = numero
-                                navController.navigate("resumen")
-                            }
+                            onConfirmarClick = { numero -> sillaEscogida = numero; navController.navigate("resumen") }
                         )
                     }
 
@@ -129,19 +134,34 @@ class MainActivity : ComponentActivity() {
                         ResumenScreen(
                             origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
                             destino = ciudadSeleccionada,
-                            fecha = "$diaSeleccionado de Marzo",
+                            fecha = "$diaSeleccionado de $mesSeleccionado",
+                            hora = horaSeleccionada,
+                            precio = precioSeleccionado,
                             sillaNumero = if (sillaEscogida != -1) sillaEscogida.toString() else "N/A",
                             onBackClick = { navController.popBackStack() },
-                            onRegresoClick = { navController.navigate("calendario_regreso") }
+                            onRegresoClick = {
+                                navController.navigate("calendario_regreso")
+                            },
+                            onConfirmarPagoClick = {
+                                profileViewModel.guardarReservaFirebase(
+                                    origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
+                                    destino = ciudadSeleccionada,
+                                    fecha = "$diaSeleccionado de $mesSeleccionado",
+                                    silla = sillaEscogida.toString(),
+                                    tipo = "IDA_PAGADA"
+                                )
+                                navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } }
+                            }
                         )
                     }
 
-
+                    // --- FLUJO DE VIAJE REGRESO ---
                     composable("calendario_regreso") {
                         CalendarioregresoScreen(
-                            onDiaSeleccionado = { dia ->
+                            onDiaSeleccionado = { dia, mes ->
                                 diaRegreso = dia
-                                navController.navigate("destino_regreso")
+                                mesRegreso = mes
+                                navController.navigate("viaje_regreso")
                             },
                             onIrADestino = { navController.navigate("destino_regreso") },
                             ciudadDestino = ciudadRegreso,
@@ -156,6 +176,19 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.popBackStack() },
                             onCiudadEscogida = { ciudad ->
                                 ciudadRegreso = ciudad
+                                navController.navigate("dia_regreso")
+                            }
+                        )
+                    }
+
+                    composable("dia_regreso") {
+                        DiaregresoScreen(
+                            ciudadDestino = ciudadRegreso,
+                            direccionOrigen = direccionOrigen,
+                            onBackClick = { navController.popBackStack() },
+                            onDiaConfirmado = { dia, mes ->
+                                diaRegreso = dia
+                                mesRegreso = mes
                                 navController.navigate("viaje_regreso")
                             }
                         )
@@ -165,9 +198,13 @@ class MainActivity : ComponentActivity() {
                         ViajeregresoScreen(
                             origen = ciudadSeleccionada.ifEmpty { "ORIGEN" },
                             destino = ciudadRegreso.ifEmpty { "DESTINO" },
-                            fecha = "$diaRegreso de Marzo",
+                            fecha = "$diaRegreso de $mesRegreso",
                             onBackClick = { navController.popBackStack() },
-                            onVerSillasClick = { navController.navigate("silla_regreso") }
+                            onVerSillasClick = { precio, hora ->
+                                precioSeleccionado = precio
+                                horaSeleccionada = hora
+                                navController.navigate("silla_regreso")
+                            }
                         )
                     }
 
@@ -176,22 +213,61 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.popBackStack() },
                             onConfirmarClick = { numero ->
                                 sillaRegreso = numero
-                                navController.navigate("resumen_final")
+                                navController.navigate("resumen_regreso")
                             }
                         )
                     }
 
-                    composable("resumen_final") {
-                        ResumenScreen(
-                            origen = ciudadRegreso,
-                            destino = ciudadSeleccionada,
-                            fecha = "$diaRegreso de Marzo",
+                    // --- RUTA INTERMEDIA: RESUMEN DE REGRESO ---
+                    composable("resumen_regreso") {
+                        ResumenregresoScreen(
+                            origen = ciudadSeleccionada,
+                            destino = ciudadRegreso,
+                            fecha = "$diaRegreso de $mesRegreso",
+                            hora = horaSeleccionada,
                             sillaNumero = if (sillaRegreso != -1) sillaRegreso.toString() else "N/A",
+                            precio = precioSeleccionado,
                             onBackClick = { navController.popBackStack() },
-                            onRegresoClick = {
-                                navController.navigate("calendario") {
-                                    popUpTo("calendario") { inclusive = true }
-                                }
+                            onConfirmarRegresoClick = { navController.navigate("resumen_final") }
+                        )
+                    }
+
+                    // --- RUTA FINAL: RESUMEN COMPARATIVO ---
+                    composable("resumen_final") {
+                        ResumenfinalScreen(
+                            // Datos Ida
+                            origenIda = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
+                            destinoIda = ciudadSeleccionada,
+                            fechaIda = "$diaSeleccionado de $mesSeleccionado",
+                            horaIda = "08:00 AM",
+                            sillaIda = if (sillaEscogida != -1) sillaEscogida.toString() else "N/A",
+                            precioIda = "$160.000",
+
+                            // Datos Regreso
+                            origenRegreso = ciudadSeleccionada,
+                            destinoRegreso = ciudadRegreso,
+                            fechaRegreso = "$diaRegreso de $mesRegreso",
+                            horaRegreso = horaSeleccionada,
+                            sillaRegreso = if (sillaRegreso != -1) sillaRegreso.toString() else "N/A",
+                            precioRegreso = precioSeleccionado,
+
+                            onBackClick = { navController.popBackStack() },
+                            onConfirmarPagoClick = {
+                                profileViewModel.guardarReservaFirebase(
+                                    origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
+                                    destino = ciudadSeleccionada,
+                                    fecha = "$diaSeleccionado de $mesSeleccionado",
+                                    silla = sillaEscogida.toString(),
+                                    tipo = "IDA_VIAJE_DOBLE"
+                                )
+                                profileViewModel.guardarReservaFirebase(
+                                    origen = ciudadSeleccionada,
+                                    destino = ciudadRegreso,
+                                    fecha = "$diaRegreso de $mesRegreso",
+                                    silla = sillaRegreso.toString(),
+                                    tipo = "REGRESO_VIAJE_DOBLE"
+                                )
+                                navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } }
                             }
                         )
                     }

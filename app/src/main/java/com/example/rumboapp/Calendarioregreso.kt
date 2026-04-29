@@ -6,24 +6,26 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun CalendarioregresoScreen(
-    onDiaSeleccionado: (Int) -> Unit,
+    onDiaSeleccionado: (Int, String) -> Unit,
     onIrADestino: () -> Unit,
     ciudadDestino: String,
     direccionOrigen: String,
@@ -31,8 +33,14 @@ fun CalendarioregresoScreen(
     onBackClick: () -> Unit
 ) {
     val verdeFondoCalendario = Color(0xFF2D461E)
-    val verdeBotonesMes = Color(0xFF4C6636)
     val cremaCirculo = Color(0xFFE8D596)
+
+    var expanded by remember { mutableStateOf(false) }
+    var mesSeleccionado by remember { mutableStateOf("Abril") }
+    val meses = listOf(
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -48,18 +56,15 @@ fun CalendarioregresoScreen(
                 .padding(horizontal = 25.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // CABECERA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(45.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.8f))
-                        .clickable { onBackClick() },
-                    contentAlignment = Alignment.Center
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.background(Color.White.copy(0.8f), CircleShape)
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
@@ -76,78 +81,91 @@ fun CalendarioregresoScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(text = "COMPRA TU PASAJE", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
-            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "TU VIAJE DE REGRESO",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(vertical = 15.dp)
+            )
 
-            RegFilaOpcion("SOLO IDA", false, verdeFondoCalendario) { }
-            Spacer(modifier = Modifier.height(10.dp))
-            RegFilaOpcion("IDA Y REGRESO", true, verdeFondoCalendario) { }
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-
-            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Text("DIRECCIÓN DE ORIGEN", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Surface(modifier = Modifier.fillMaxWidth().height(35.dp), color = verdeFondoCalendario, shape = RoundedCornerShape(22.dp)) {
-                    BasicTextField(
-                        value = direccionOrigen,
-                        onValueChange = onOrigenCambiado,
-                        textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp),
-                        cursorBrush = SolidColor(Color.White),
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
-                        decorationBox = { innerTextField ->
-                            if (direccionOrigen.isEmpty()) Text("Escribe tu dirección...", color = Color.White.copy(0.6f), fontSize = 14.sp)
-                            innerTextField()
-                        }
-                    )
-                }
-            }
+            // ENTRADAS DE DATOS
+            RegCalEntradaDireccion("DIRECCIÓN DE ORIGEN", direccionOrigen, verdeFondoCalendario, onOrigenCambiado)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // DESTINO (Botón)
-            RegCajaDireccionBoton("INGRESA TU DESTINO:", if(ciudadDestino.isEmpty()) "Seleccionar..." else ciudadDestino, verdeFondoCalendario) {
-                onIrADestino()
+            RegCalBotonDestino("CIUDAD DE REGRESO:", ciudadDestino, verdeFondoCalendario, onIrADestino)
+
+            Text(
+                "FECHA DE REGRESO",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 15.dp)
+            )
+
+            // SELECTOR DE MESES
+            Box(modifier = Modifier.padding(vertical = 8.dp)) {
+                Button(
+                    onClick = { expanded = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C6636)),
+                    shape = RoundedCornerShape(15.dp)
+                ) {
+                    Text(mesSeleccionado, color = Color.White, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(cremaCirculo)
+                ) {
+                    meses.forEach { mes ->
+                        DropdownMenuItem(
+                            text = { Text(mes, fontWeight = FontWeight.Bold, color = verdeFondoCalendario) },
+                            onClick = {
+                                mesSeleccionado = mes
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-            Text("FECHA DE REGRESO", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-
-            Row(modifier = Modifier.padding(vertical = 10.dp)) {
-                RegBotonMes("Enero", false, verdeBotonesMes) { }
-                RegBotonMes("Febrero", false, verdeBotonesMes) { }
-                RegBotonMes("Marzo", true, verdeBotonesMes) { }
-            }
-
+            // CONTENEDOR DEL CALENDARIO
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = verdeFondoCalendario.copy(alpha = 0.95f),
+                color = verdeFondoCalendario.copy(0.95f),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = mesSeleccionado.uppercase(),
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                         listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom").forEach {
                             Text(it, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    val totalDias = 31
-                    val columnas = 7
-                    val filas = (totalDias + columnas - 1) / columnas
-                    Column {
-                        for (fila in 0 until filas) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                                for (col in 0 until columnas) {
-                                    val dia = fila * columnas + col + 1
-                                    if (dia <= totalDias) {
-                                        RegItemDia(dia, cremaCirculo, verdeFondoCalendario) { onDiaSeleccionado(dia) }
-                                    } else {
-                                        Spacer(modifier = Modifier.size(35.dp))
-                                    }
+
+                    // GENERACIÓN DE DÍAS
+                    for (fila in 0 until 5) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                            for (col in 0 until 7) {
+                                val dia = fila * 7 + col + 1
+                                if (dia <= 31) {
+                                    RegCalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = {
+                                        onDiaSeleccionado(dia, mesSeleccionado)
+                                    })
+                                } else {
+                                    Spacer(modifier = Modifier.size(34.dp))
                                 }
                             }
-                            Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }
@@ -156,51 +174,78 @@ fun CalendarioregresoScreen(
     }
 }
 
+// --- COMPONENTES ÚNICOS PARA ESTA PANTALLA ---
+
 @Composable
-fun RegFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 4.dp)
-    ) {
-        Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(if (seleccionado) color else Color.Gray.copy(0.4f)))
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(texto, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+fun RegCalEntradaDireccion(label: String, valor: String, colorFondo: Color, onValueChange: (String) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        TextField(
+            value = valor,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(22.dp)),
+            placeholder = { Text("Ingresa tu dirección de recogida", color = Color.White.copy(0.6f), fontSize = 14.sp) },
+            textStyle = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold),
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = colorFondo,
+                unfocusedContainerColor = colorFondo,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
+            )
+        )
     }
 }
 
 @Composable
-fun RegCajaDireccionBoton(label: String, valor: String, color: Color, onClick: () -> Unit) {
+fun RegCalBotonDestino(label: String, ciudad: String, colorFondo: Color, onClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-        Surface(
-            modifier = Modifier.fillMaxWidth().height(35.dp).clickable { onClick() },
-            color = color,
-            shape = RoundedCornerShape(22.dp)
+        Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(colorFondo)
+                .clickable { onClick() }
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Box(contentAlignment = Alignment.CenterStart) {
-                Text(valor, color = Color.White, modifier = Modifier.padding(start = 16.dp), fontSize = 14.sp)
-            }
+            Text(
+                text = ciudad.ifEmpty { "Selecciona tu ciudad" },
+                color = if (ciudad.isEmpty()) Color.White.copy(0.6f) else Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
 
 @Composable
-fun RegBotonMes(texto: String, activo: Boolean, color: Color, onClick: () -> Unit) {
-    Surface(
-        modifier = Modifier.padding(horizontal = 4.dp).clickable { onClick() },
-        color = if (activo) color else color.copy(alpha = 0.4f),
-        shape = RoundedCornerShape(15.dp)
+fun RegCalItemDia(dia: Int, colorCirculo: Color, colorTexto: Color, onClick: () -> Unit = {}) {
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(colorCirculo)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
     ) {
-        Text(text = texto, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(text = dia.toString(), color = colorTexto, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
     }
 }
 
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun RegItemDia(dia: Int, colorCirculo: Color, colorTexto: Color, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.size(35.dp).clip(CircleShape).background(colorCirculo).clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = dia.toString(), color = colorTexto, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-    }
+fun CalendarioregresoPreview() {
+    CalendarioregresoScreen(
+        onDiaSeleccionado = { _, _ -> },
+        onIrADestino = {},
+        ciudadDestino = "", // Vació para mostrar "Selecciona tu ciudad"
+        direccionOrigen = "", // Vacío para mostrar "Ingresa tu dirección de recogida"
+        onOrigenCambiado = {},
+        onBackClick = {}
+    )
 }

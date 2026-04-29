@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,13 +25,36 @@ fun ResumenScreen(
     origen: String,
     destino: String,
     fecha: String,
-    sillaNumero: String, // NUEVO: Para recibir el número de silla desde el Main
+    hora: String,       // Parámetro dinámico recibido de MainActivity
+    precio: String,     // Parámetro dinámico recibido de MainActivity
+    sillaNumero: String,
     onBackClick: () -> Unit,
-    onRegresoClick: () -> Unit
+    onRegresoClick: () -> Unit,
+    onConfirmarPagoClick: () -> Unit
 ) {
     val verdeFondo = Color(0xFF2D461E)
     val cremaTarjeta = Color(0xFFE8D596)
     val cafeTexto = Color(0xFF2D2D2D)
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onConfirmarPagoClick()
+                }) {
+                    Text("Aceptar", color = verdeFondo, fontWeight = FontWeight.Bold)
+                }
+            },
+            title = { Text(text = "¡Éxito!", fontWeight = FontWeight.Bold) },
+            text = { Text(text = "El viaje ya ha sido reservado correctamente.") },
+            shape = RoundedCornerShape(15.dp),
+            containerColor = Color.White
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -73,7 +96,6 @@ fun ResumenScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,16 +123,14 @@ fun ResumenScreen(
             HorizontalDivider(color = cafeTexto.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Datos que vienen del flujo de la App
+            // Aquí llamamos a la función que estaba faltando
             ResumenRow(R.drawable.ic_location, "Origen:", origen)
             ResumenRow(R.drawable.ic_destination, "Destino:", destino)
             ResumenRow(R.drawable.ic_calendar, "Fecha:", fecha)
-            ResumenRow(R.drawable.ic_clock, "Hora:", "08:00 AM")
-            // ACTUALIZADO: Ahora muestra el número de silla real
+            ResumenRow(R.drawable.ic_clock, "Hora:", hora)
             ResumenRow(R.drawable.ic_seat_choice, "Silla:", "Asiento $sillaNumero")
-            ResumenRow(R.drawable.ic_price_tag, "Precio:", "$160.000")
+            ResumenRow(R.drawable.ic_price_tag, "Precio:", precio)
         }
-
 
         Box(
             modifier = Modifier
@@ -126,7 +146,6 @@ fun ResumenScreen(
             )
         }
 
-
         Button(
             onClick = { onRegresoClick() },
             modifier = Modifier.fillMaxWidth(0.9f).height(55.dp),
@@ -140,21 +159,24 @@ fun ResumenScreen(
         Spacer(modifier = Modifier.height(15.dp))
 
         Button(
-            onClick = { /* Lógica de pago */ },
+            onClick = { showDialog = true },
             modifier = Modifier.fillMaxWidth(0.9f).height(55.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
             shape = RoundedCornerShape(12.dp),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
         ) {
-            Text("Confirmar y Pagar", color = verdeFondo, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+            Text("Reservar Viaje", color = verdeFondo, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
         }
     }
 }
 
+// --- ESTA ES LA FUNCIÓN QUE TE HACÍA FALTA ---
 @Composable
 fun ResumenRow(iconId: Int, label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -165,7 +187,12 @@ fun ResumenRow(iconId: Int, label: String, value: String) {
                 tint = Color(0xFF2D2D2D)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2D2D2D))
+            Text(
+                text = label,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2D2D2D)
+            )
         }
 
         Box(
@@ -177,7 +204,12 @@ fun ResumenRow(iconId: Int, label: String, value: String) {
                 .padding(horizontal = 10.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(text = value, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
         }
     }
 }
@@ -186,11 +218,12 @@ fun ResumenRow(iconId: Int, label: String, value: String) {
 @Composable
 fun ResumenPreview() {
     ResumenScreen(
-        origen = "Villavicencio",
-        destino = "Acacías",
-        fecha = "20 de Marzo",
-        sillaNumero = "2",
-        onBackClick = {},
-        onRegresoClick = {}
+        "Villavicencio",
+        "Acacías",
+        "20 de Marzo",
+        "10:00 AM",
+        "$160.000",
+        "2",
+        {}, {}, {}
     )
 }
