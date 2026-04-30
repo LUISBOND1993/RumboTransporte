@@ -22,7 +22,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ResumenregresoScreen(onBackClick: () -> Unit) {
+fun ResumenregresoScreen(
+    origen: String,
+    destino: String,
+    fecha: String,
+    hora: String,
+    sillaNumero: String,
+    precio: String,
+    onBackClick: () -> Unit,
+    onConfirmarRegresoClick: () -> Unit // Navega al Resumen Final
+) {
     val verdeFondo = Color(0xFF2D461E)
     val cremaTarjeta = Color(0xFFE8D596)
     val cafeTexto = Color(0xFF2D2D2D)
@@ -50,7 +59,7 @@ fun ResumenregresoScreen(onBackClick: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_back),
                     contentDescription = "Atrás",
-                    modifier = Modifier.size(24.dp).rotate(180f),
+                    modifier = Modifier.size(24.dp),
                     tint = Color.Unspecified
                 )
             }
@@ -95,16 +104,16 @@ fun ResumenregresoScreen(onBackClick: () -> Unit) {
             HorizontalDivider(color = cafeTexto.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Ahora estas funciones sí funcionarán porque las definimos abajo
-            ResumenRowCompact(R.drawable.ic_location, "Origen: Acacías")
-            ResumenRowCompact(R.drawable.ic_destination, "Destino: Villavicencio")
-            ResumenRowCompact(R.drawable.ic_calendar, "Fecha de Regreso: 25/03/2026")
-            ResumenRowCompact(R.drawable.ic_clock, "Hora de Regreso: 02:00 PM")
-            ResumenRowCompact(R.drawable.ic_seat_choice, "Silla de Regreso: Asiento 4")
-            ResumenRowCompact(R.drawable.ic_price_tag, "Total a Pagar: $160.000")
+            // Información dinámica recibida por parámetros
+            ResumenRowCompact(R.drawable.ic_location, "Origen: $origen")
+            ResumenRowCompact(R.drawable.ic_destination, "Destino: $destino")
+            ResumenRowCompact(R.drawable.ic_calendar, "Fecha de Regreso: $fecha")
+            ResumenRowCompact(R.drawable.ic_clock, "Hora de Regreso: $hora")
+            ResumenRowCompact(R.drawable.ic_seat_choice, "Silla de Regreso: Asiento $sillaNumero")
+            ResumenRowCompact(R.drawable.ic_price_tag, "Precio de Vuelta: $precio")
         }
 
-        // --- DUSTER ---
+        // --- ESPACIO FLEXIBLE / IMAGEN ---
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -121,7 +130,7 @@ fun ResumenregresoScreen(onBackClick: () -> Unit) {
 
         // --- BOTÓN: CONFIRMAR ---
         Button(
-            onClick = { /* Acción final */ },
+            onClick = { onConfirmarRegresoClick() },
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .height(60.dp),
@@ -130,7 +139,7 @@ fun ResumenregresoScreen(onBackClick: () -> Unit) {
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
         ) {
             Text(
-                text = "CONFIRMAR RESERVA DE MI VIAJE",
+                text = "CONTINUAR AL RESUMEN FINAL",
                 color = cafeTexto,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -141,7 +150,6 @@ fun ResumenregresoScreen(onBackClick: () -> Unit) {
     }
 }
 
-// ESTA ES LA FUNCIÓN QUE TE FALTABA
 @Composable
 fun ResumenRowCompact(iconId: Int, text: String) {
     Row(
@@ -169,5 +177,14 @@ fun ResumenRowCompact(iconId: Int, text: String) {
 @Preview(showSystemUi = true)
 @Composable
 fun ResumenregresoPreview() {
-    ResumenregresoScreen(onBackClick = {})
+    ResumenregresoScreen(
+        origen = "Acacías",
+        destino = "Villavicencio",
+        fecha = "25 de Marzo",
+        hora = "02:00 PM",
+        sillaNumero = "4",
+        precio = "$160.000",
+        onBackClick = {},
+        onConfirmarRegresoClick = {}
+    )
 }

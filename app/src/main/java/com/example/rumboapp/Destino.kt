@@ -19,6 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DestinoScreen(onBackClick: () -> Unit, onCiudadEscogida: (String) -> Unit) {
@@ -58,7 +59,7 @@ fun DestinoScreen(onBackClick: () -> Unit, onCiudadEscogida: (String) -> Unit) {
                         CajaCiudad(
                             texto = ciudad,
                             colorFondo = cremaTarjetas,
-                            mostrarEstrella = (ciudad == "Acacías"),
+                            mostrarEstrella = false, // Estrella eliminada
                             onClick = { onCiudadEscogida(ciudad) }
                         )
                     }
@@ -93,4 +94,10 @@ fun DestinoFilaOpcion(texto: String, seleccionado: Boolean, color: Color, onClic
         Spacer(modifier = Modifier.width(10.dp))
         Text(texto, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DestinoPreview() {
+    DestinoScreen(onBackClick = {}, onCiudadEscogida = {})
 }

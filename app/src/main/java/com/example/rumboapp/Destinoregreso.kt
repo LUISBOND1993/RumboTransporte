@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -28,6 +29,7 @@ fun DestinoregresoScreen(
     val cremaTarjetas = Color(0xFFE8D596)
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Imagen de fondo con el recurso que mencionaste
         Image(
             painter = painterResource(id = R.drawable.fondo_paisaje),
             contentDescription = null,
@@ -41,6 +43,7 @@ fun DestinoregresoScreen(
                 .padding(horizontal = 25.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Barra superior: Botón Atrás y Perfil
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -57,7 +60,7 @@ fun DestinoregresoScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = "Atrás",
-                        modifier = Modifier.size(24.dp).rotate(180f),
+                        modifier = Modifier.size(24.dp), // Quitamos rotación si el icono ya apunta a la izquierda
                         tint = Color.Unspecified
                     )
                 }
@@ -65,15 +68,26 @@ fun DestinoregresoScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_user),
                     contentDescription = "Perfil",
-                    modifier = Modifier.size(45.dp).clip(CircleShape)
+                    modifier = Modifier
+                        .size(45.dp)
+                        .clip(CircleShape)
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            Text(text = "COMPRA TU PASAJE", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+            Text(
+                text = "COMPRA TU PASAJE",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.Black
+            )
             Spacer(modifier = Modifier.height(15.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            // Indicador de modo de viaje
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(verdeFondoCuadro))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("IDA Y REGRESO", fontWeight = FontWeight.Bold, fontSize = 14.sp)
@@ -81,15 +95,23 @@ fun DestinoregresoScreen(
 
             Spacer(modifier = Modifier.height(25.dp))
 
+            // Etiquetas de Origen y Búsqueda
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text("ORIGEN:", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
-                Box(modifier = Modifier.fillMaxWidth().height(35.dp).clip(RoundedCornerShape(20.dp)).background(verdeFondoCuadro))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(35.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(verdeFondoCuadro)
+                )
                 Spacer(modifier = Modifier.height(15.dp))
                 Text("BUSCA TU DESTINO DE REGRESO:", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Contenedor de lista de ciudades
             Surface(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 color = verdeFondoCuadro.copy(alpha = 0.9f),
@@ -109,11 +131,26 @@ fun DestinoregresoScreen(
                             color = cremaTarjetas,
                             shape = RoundedCornerShape(15.dp)
                         ) {
-                            Text(text = ciudad, modifier = Modifier.padding(15.dp), fontWeight = FontWeight.Bold, color = Color.Black)
+                            Text(
+                                text = ciudad,
+                                modifier = Modifier.padding(15.dp),
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
                         }
                     }
                 }
             }
         }
     }
+}
+
+// --- ESTA ES LA PARTE QUE HABILITA EL SPLIT PREVIEW ---
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun DestinoregresoScreenPreview() {
+    DestinoregresoScreen(
+        onBackClick = {},
+        onCiudadEscogida = {}
+    )
 }

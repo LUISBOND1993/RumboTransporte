@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,18 +21,25 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun CalendarioScreen(
-    onDiaSeleccionado: (Int) -> Unit,
+    onDiaSeleccionado: (Int, String) -> Unit,
     onIrADestino: () -> Unit,
     ciudadDestino: String,
     direccionOrigen: String,
     onOrigenCambiado: (String) -> Unit
 ) {
     val verdeFondoCalendario = Color(0xFF2D461E)
-    val verdeBotonesMes = Color(0xFF4C6636)
     val cremaCirculo = Color(0xFFE8D596)
+
+    var expanded by remember { mutableStateOf(false) }
+    var mesSeleccionado by remember { mutableStateOf("Marzo") }
+    val meses = listOf(
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -46,9 +55,10 @@ fun CalendarioScreen(
                 .padding(horizontal = 25.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // CABECERA
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 IconButton(
-                    onClick = { /* Puedes agregar navegación atrás si gustas */ },
+                    onClick = { /* Navegación atrás */ },
                     modifier = Modifier.background(Color.White.copy(0.8f), CircleShape)
                 ) {
                     Icon(
@@ -64,24 +74,51 @@ fun CalendarioScreen(
                 )
             }
 
-            Text("COMPRA TU PASAJE", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(vertical = 20.dp))
+            Text(
+                "COMPRA TU PASAJE",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
+            )
 
-            CalFilaOpcion("SOLO IDA", true, verdeFondoCalendario)
-            CalFilaOpcion("IDA Y REGRESO", false, verdeFondoCalendario)
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Spacer(modifier = Modifier.height(15.dp))
-
+            // ENTRADAS DE DATOS
             CalEntradaDireccion("DIRECCIÓN DE ORIGEN", direccionOrigen, verdeFondoCalendario, onOrigenCambiado)
+
             CalBotonDestino("INGRESA TU DESTINO:", ciudadDestino, verdeFondoCalendario, onIrADestino)
 
             Text("FECHA DE IDA", fontSize = 23.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 20.dp))
 
-            Row(modifier = Modifier.padding(vertical = 10.dp)) {
-                CalBotonMes("Enero", false, verdeBotonesMes)
-                CalBotonMes("Febrero", false, verdeBotonesMes)
-                CalBotonMes("Marzo", true, verdeBotonesMes)
+            // MENÚ DESPLEGABLE DE MESES
+            Box(modifier = Modifier.padding(vertical = 10.dp)) {
+                Button(
+                    onClick = { expanded = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C6636)),
+                    shape = RoundedCornerShape(15.dp)
+                ) {
+                    Text(mesSeleccionado, color = Color.White, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(cremaCirculo)
+                ) {
+                    meses.forEach { mes ->
+                        DropdownMenuItem(
+                            text = { Text(mes, fontWeight = FontWeight.Bold, color = verdeFondoCalendario) },
+                            onClick = {
+                                mesSeleccionado = mes
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
 
+            // CUADRÍCULA DEL CALENDARIO
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = verdeFondoCalendario.copy(0.95f),
@@ -91,6 +128,13 @@ fun CalendarioScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    Text(
+                        text = mesSeleccionado.uppercase(),
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                         listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom").forEach {
                             Text(it, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -102,7 +146,9 @@ fun CalendarioScreen(
                             for (col in 0 until 7) {
                                 val dia = fila * 7 + col + 1
                                 if (dia <= 31) {
-                                    CalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = { onDiaSeleccionado(dia) })
+                                    CalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = {
+                                        onDiaSeleccionado(dia, mesSeleccionado)
+                                    })
                                 } else {
                                     Spacer(modifier = Modifier.size(34.dp))
                                 }
@@ -115,7 +161,6 @@ fun CalendarioScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalEntradaDireccion(label: String, valor: String, colorFondo: Color, onValueChange: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
@@ -124,7 +169,8 @@ fun CalEntradaDireccion(label: String, valor: String, colorFondo: Color, onValue
             value = valor,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(22.dp)),
-            placeholder = { Text("Escribe aquí...", color = Color.White.copy(0.6f), fontSize = 14.sp) },
+            // ACTUALIZADO: Texto sugerido para la dirección
+            placeholder = { Text("Ingresa tu dirección de recogida", color = Color.White.copy(0.6f), fontSize = 14.sp) },
             textStyle = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold),
             singleLine = true,
             colors = TextFieldDefaults.colors(
@@ -132,7 +178,9 @@ fun CalEntradaDireccion(label: String, valor: String, colorFondo: Color, onValue
                 unfocusedContainerColor = colorFondo,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.White
+                cursorColor = Color.White,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
             )
         )
     }
@@ -143,11 +191,18 @@ fun CalBotonDestino(label: String, ciudad: String, colorFondo: Color, onClick: (
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Text(label, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Box(
-            modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(22.dp)).background(colorFondo).clickable { onClick() }.padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(colorFondo)
+                .clickable { onClick() }
+                .padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = if (ciudad.isEmpty()) "Seleccionar destino..." else ciudad,
+                // ACTUALIZADO: Texto sugerido para la ciudad
+                text = if (ciudad.isEmpty()) "Selecciona tu ciudad" else ciudad,
                 color = if (ciudad.isEmpty()) Color.White.copy(0.6f) else Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -157,31 +212,27 @@ fun CalBotonDestino(label: String, ciudad: String, colorFondo: Color, onClick: (
 }
 
 @Composable
-fun CalFilaOpcion(texto: String, seleccionado: Boolean, color: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(if (seleccionado) color else Color.Gray.copy(0.4f)))
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(texto, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
-    }
-}
-
-@Composable
-fun CalBotonMes(texto: String, activo: Boolean, color: Color) {
-    Surface(
-        modifier = Modifier.padding(horizontal = 4.dp),
-        color = if (activo) color else color.copy(alpha = 0.4f),
-        shape = RoundedCornerShape(15.dp)
-    ) {
-        Text(text = texto, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
 fun CalItemDia(dia: Int, colorCirculo: Color, colorTexto: Color, onClick: () -> Unit = {}) {
     Box(
-        modifier = Modifier.size(34.dp).clip(CircleShape).background(colorCirculo).clickable { onClick() },
+        modifier = Modifier
+            .size(34.dp)
+            .clip(CircleShape)
+            .background(colorCirculo)
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(text = dia.toString(), color = colorTexto, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CalendarioPreview() {
+    CalendarioScreen(
+        onDiaSeleccionado = { _, _ -> },
+        onIrADestino = {},
+        ciudadDestino = "", // Vacío para ver el placeholder "Selecciona tu ciudad"
+        direccionOrigen = "", // Vacío para ver el placeholder "Ingresa tu dirección..."
+        onOrigenCambiado = {}
+    )
 }

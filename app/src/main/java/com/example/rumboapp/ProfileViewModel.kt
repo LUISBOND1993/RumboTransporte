@@ -26,6 +26,39 @@ class ProfileViewModel : ViewModel() {
         fetchProfileData()
     }
 
+    // --- NUEVA FUNCIÓN PARA GUARDAR RESERVAS EN FIREBASE ---
+    fun guardarReservaFirebase(
+        origen: String,
+        destino: String,
+        fecha: String,
+        silla: String,
+        tipo: String
+    ) {
+        val userId = auth.currentUser?.uid ?: "anonimo"
+
+        viewModelScope.launch {
+            try {
+                val reserva = hashMapOf(
+                    "usuarioId" to userId,
+                    "nombrePasajero" to (usuario?.nombre ?: "Sin nombre"),
+                    "origen" to origen,
+                    "destino" to destino,
+                    "fechaViaje" to fecha,
+                    "asiento" to silla,
+                    "tipoServicio" to tipo,
+                    "estado" to "Confirmado",
+                    "fechaCreacion" to com.google.firebase.Timestamp.now()
+                )
+
+                // Guarda la información en una nueva colección llamada "reservas_viajes"
+                db.collection("reservas_viajes").add(reserva).await()
+
+            } catch (e: Exception) {
+                errorMessage = "Error al guardar reserva: ${e.message}"
+            }
+        }
+    }
+
     fun fetchProfileData() {
         val userId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
@@ -38,7 +71,7 @@ class ProfileViewModel : ViewModel() {
                     val email = userDoc.getString("email") ?: ""
                     val fotoUrl = userDoc.getString("fotoUrl") ?: ""
                     val avatarName = userDoc.getString("avatarName") ?: ""
-                    
+
                     val direccionesRaw = userDoc.get("direcciones") as? List<Map<String, String>>
                     val direcciones = direccionesRaw?.map {
                         DireccionGuardada(it["alias"] ?: "", it["descripcion"] ?: "")
@@ -54,7 +87,7 @@ class ProfileViewModel : ViewModel() {
                     val telefono = driverDoc.getString("telefono") ?: usuario?.telefono ?: ""
                     val email = driverDoc.getString("email") ?: usuario?.email ?: ""
                     val licencia = driverDoc.getString("licencia") ?: ""
-                    
+
                     val vehiculosRaw = driverDoc.get("vehiculos") as? List<Map<String, String>>
                     val vehiculos = vehiculosRaw?.map {
                         VehiculoGuardado(it["alias"] ?: "", it["placa"] ?: "", it["modelo"] ?: "", it["anio"] ?: "")
@@ -112,7 +145,6 @@ class ProfileViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
-                // Actualizamos avatarName y LIMPIAMOS fotoUrl en Firestore para que el cambio sea visible
                 val updates = mapOf(
                     "avatarName" to avatarName,
                     "fotoUrl" to ""
@@ -136,7 +168,7 @@ class ProfileViewModel : ViewModel() {
                 val photoRef = storage.reference.child("perfiles/$userId.jpg")
                 photoRef.putFile(uri).await()
                 val downloadUrl = photoRef.downloadUrl.await().toString()
-                
+
                 db.collection("usuarios").document(userId).update(
                     mapOf("fotoUrl" to downloadUrl, "avatarName" to "")
                 ).await()

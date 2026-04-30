@@ -21,7 +21,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () -> Unit, onVerSillasClick: () -> Unit) {
+fun ViajeScreen(
+    origen: String,
+    destino: String,
+    fecha: String,
+    onBackClick: () -> Unit,
+    onVerSillasClick: (String, String) -> Unit // Ahora recibe Precio y Hora
+) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaCajas = Color(0xFFE8D596)
 
@@ -77,9 +83,12 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(text = "TU VIAJE", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    // Aquí llamamos a ResumenItem
                     ResumenItem(R.drawable.ic_location, origen, cremaCajas)
                     Spacer(modifier = Modifier.height(10.dp))
                     ResumenItem(R.drawable.ic_destination, destino, cremaCajas)
+
                     Spacer(modifier = Modifier.height(15.dp))
                     Text(text = "Fecha de salida", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Row(
@@ -105,8 +114,8 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
             Spacer(modifier = Modifier.height(15.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
-                item { ViajeCardCorreccion("68.000", "10:00 am", "2:00 pm", onVerSillasClick) }
-                item { ViajeCardCorreccion("68.000", "8:00 pm", "12:00 am", onVerSillasClick) }
+                item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
+                item { ViajeCardCorreccion("170.000", "08:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -119,19 +128,38 @@ fun ViajeScreen(origen: String, destino: String, fecha: String, onBackClick: () 
     }
 }
 
+// --- FUNCIÓN PARA LOS ITEMS DEL RESUMEN (ORIGEN Y DESTINO) ---
 @Composable
 fun ResumenItem(icono: Int, texto: String, colorFondo: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(painter = painterResource(id = icono), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        Icon(
+            painter = painterResource(id = icono),
+            contentDescription = null,
+            tint = Color.Unspecified,
+            modifier = Modifier.size(24.dp)
+        )
         Spacer(modifier = Modifier.width(10.dp))
-        Box(modifier = Modifier.fillMaxWidth().height(30.dp).clip(RoundedCornerShape(10.dp)).background(colorFondo), contentAlignment = Alignment.CenterStart) {
-            Text(text = texto, modifier = Modifier.padding(start = 10.dp), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(colorFondo),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = texto,
+                modifier = Modifier.padding(start = 10.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                color = Color.Black
+            )
         }
     }
 }
 
 @Composable
-fun ViajeCardCorreccion(precio: String, salida: String, llegada: String, onVerSillasClick: () -> Unit) {
+fun ViajeCardCorreccion(precio: String, salida: String, llegada: String, onVerSillasClick: (String, String) -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color(0xFF2D461E).copy(alpha = 0.9f),
@@ -156,7 +184,7 @@ fun ViajeCardCorreccion(precio: String, salida: String, llegada: String, onVerSi
                     Spacer(modifier = Modifier.height(15.dp))
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
-                            modifier = Modifier.clickable { onVerSillasClick() },
+                            modifier = Modifier.clickable { onVerSillasClick("$ $precio", salida) },
                             color = Color(0xFFE8D596),
                             shape = RoundedCornerShape(8.dp)
                         ) {

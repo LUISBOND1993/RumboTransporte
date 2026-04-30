@@ -23,7 +23,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ResumenfinalScreen() {
+fun ResumenfinalScreen(
+    // Datos Ida
+    origenIda: String,
+    destinoIda: String,
+    fechaIda: String,
+    horaIda: String,
+    sillaIda: String,
+    precioIda: String,
+    // Datos Regreso
+    origenRegreso: String,
+    destinoRegreso: String,
+    fechaRegreso: String,
+    horaRegreso: String,
+    sillaRegreso: String,
+    precioRegreso: String,
+    // Acciones
+    onBackClick: () -> Unit,
+    onConfirmarPagoClick: () -> Unit
+) {
     val verdeBorde = Color(0xFF2D461E)
     val cremaFondo = Color(0xFFE8D596)
     val cafeTexto = Color(0xFF2D2D2D)
@@ -43,19 +61,20 @@ fun ResumenfinalScreen() {
                 .padding(horizontal = 20.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 35.dp)) { // Añadido padding para que el botón no choque con la hora del sistema
+            // Botón Atrás
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 35.dp)) {
                 Box(
                     modifier = Modifier
                         .size(38.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.8f))
-                        .clickable { /* Acción para volver */ },
+                        .clickable { onBackClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_back),
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp).rotate(180f),
+                        modifier = Modifier.size(18.dp),
                         tint = Color.Unspecified
                     )
                 }
@@ -63,11 +82,13 @@ fun ResumenfinalScreen() {
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Cuadro Verde Exterior
             Surface(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 color = verdeBorde,
                 shape = RoundedCornerShape(30.dp)
             ) {
+                // Cuadro Crema Interior
                 Surface(
                     modifier = Modifier.padding(10.dp).fillMaxSize(),
                     color = cremaFondo,
@@ -81,7 +102,7 @@ fun ResumenfinalScreen() {
                     ) {
                         Text(
                             "RESUMEN",
-                            fontSize = 26.sp, // Ajustado para mejor legibilidad
+                            fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
                             color = cafeTexto
                         )
@@ -89,23 +110,30 @@ fun ResumenfinalScreen() {
 
                         Spacer(modifier = Modifier.height(15.dp))
 
+                        // SECCIÓN IDA
                         Text("VIAJE IDA", fontWeight = FontWeight.Black, fontSize = 16.sp)
-                        ContenidoResumen()
+                        ContenidoResumen(
+                            datos = listOf(origenIda, destinoIda, fechaIda, horaIda, "Asiento $sillaIda", precioIda)
+                        )
 
                         Spacer(modifier = Modifier.height(15.dp))
                         HorizontalDivider(color = cafeTexto.copy(alpha = 0.1f))
                         Spacer(modifier = Modifier.height(15.dp))
 
+                        // SECCIÓN REGRESO
                         Text("VIAJE DE REGRESO", fontWeight = FontWeight.Black, fontSize = 16.sp)
-                        ContenidoResumen()
+                        ContenidoResumen(
+                            datos = listOf(origenRegreso, destinoRegreso, fechaRegreso, horaRegreso, "Asiento $sillaRegreso", precioRegreso)
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(15.dp))
 
+            // Botón de Pago
             Button(
-                onClick = { /* Lógica de pago */ },
+                onClick = { onConfirmarPagoClick() },
                 modifier = Modifier.fillMaxWidth(0.8f).height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = cremaFondo),
                 shape = RoundedCornerShape(12.dp),
@@ -119,14 +147,14 @@ fun ResumenfinalScreen() {
             Image(
                 painter = painterResource(id = R.drawable.logo_rumbo),
                 contentDescription = "Logo Rumbo",
-                modifier = Modifier.size(60.dp) // Reducido un poco para que quepa mejor en pantallas pequeñas
+                modifier = Modifier.size(60.dp)
             )
         }
     }
 }
 
 @Composable
-fun ContenidoResumen() {
+fun ContenidoResumen(datos: List<String>) {
     val etiquetas = listOf("Origen:", "Destino:", "Fecha:", "Hora:", "Silla:", "Precio:")
     val iconos = listOf(
         R.drawable.ic_location, R.drawable.ic_map_route,
@@ -137,33 +165,64 @@ fun ContenidoResumen() {
     Column(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)) {
         etiquetas.forEachIndexed { index, texto ->
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icono y Etiqueta
                 Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(id = iconos[index]), null, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        painter = painterResource(id = iconos[index]),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.Unspecified
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(texto, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
+
+                // Cuadro Blanco con el valor real
                 Box(
                     modifier = Modifier
-                        .weight(1.5f) // Ajustado para que no se vea tan separado
-                        .height(24.dp)
+                        .weight(1.5f)
+                        .height(26.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.White.copy(alpha = 0.9f))
-                )
+                        .padding(horizontal = 10.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = datos.getOrElse(index) { "" },
+                        fontSize = 12.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
 }
 
-// ESTA ES LA PARTE CLAVE PARA VER EL CELULAR REAL
 @Preview(
     showBackground = true,
-    showSystemUi = true, // Esto activa la barra de estado y navegación
-    device = "spec:width=411dp,height=891dp" // Define un tamaño de dispositivo estándar
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp"
 )
 @Composable
 fun ResumenfinalPreview() {
-    ResumenfinalScreen()
+    ResumenfinalScreen(
+        origenIda = "Villavicencio",
+        destinoIda = "Acacías",
+        fechaIda = "20 de Marzo",
+        horaIda = "08:00 AM",
+        sillaIda = "12",
+        precioIda = "$160.000",
+        origenRegreso = "Acacías",
+        destinoRegreso = "Villavicencio",
+        fechaRegreso = "25 de Marzo",
+        horaRegreso = "04:00 PM",
+        sillaRegreso = "05",
+        precioRegreso = "$160.000",
+        onBackClick = {},
+        onConfirmarPagoClick = {}
+    )
 }
