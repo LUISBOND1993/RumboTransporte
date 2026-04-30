@@ -21,7 +21,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.rumboapp.data.InfoTiquete
+import com.example.rumboapp.data.MetodoPago
 import com.example.rumboapp.ui.theme.RumboAppTheme
+import com.example.rumboapp.viewmodel.PagoUiState
+import com.example.rumboapp.viewmodel.PagoViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,7 @@ class MainActivity : ComponentActivity() {
             RumboAppTheme {
                 val navController = rememberNavController()
                 val profileViewModel: ProfileViewModel = viewModel()
+                val pagoViewModel: PagoViewModel = viewModel()
 
                 // --- ESTADOS GLOBALES (IDA) ---
                 var ciudadSeleccionada by remember { mutableStateOf("") }
@@ -48,6 +53,23 @@ class MainActivity : ComponentActivity() {
                 var diaRegreso by remember { mutableIntStateOf(25) }
                 var mesRegreso by remember { mutableStateOf("Abril") }
                 var sillaRegreso by remember { mutableIntStateOf(-1) }
+
+                // --- OBSERVADOR DE ESTADO DE PAGO ---
+                val pagoState by pagoViewModel.uiState.collectAsState()
+
+                LaunchedEffect(pagoState) {
+                    when (val state = pagoState) {
+                        is PagoUiState.Exitoso -> {
+                            navController.navigate("pago_exitoso") {
+                                popUpTo("pago_seleccion") { inclusive = true }
+                            }
+                        }
+                        is PagoUiState.Rechazado -> {
+                            navController.navigate("pago_rechazado/${state.motivo}/${state.codigo}")
+                        }
+                        else -> Unit
+                    }
+                }
 
                 NavHost(navController = navController, startDestination = "welcome") {
 
@@ -80,11 +102,11 @@ class MainActivity : ComponentActivity() {
                     composable("registro_completado") { RegistroCompletadoScreen(onLoginClick = { navController.navigate("login") { popUpTo("welcome") { inclusive = true } } }) }
                     composable("profile") { ProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_profile") }, onEditAddressClick = { navController.navigate("edit_address") }, onAddAddressClick = { navController.navigate("add_address") }, onAddPhotoClick = { navController.navigate("photo_picker") }, onSelectAvatarClick = { navController.navigate("avatar_picker") }) }
                     composable("edit_profile") { val usuario = profileViewModel.usuario; EditProfileScreen(nombreInicial = usuario?.nombre ?: "", telefonoInicial = usuario?.telefono ?: "", emailInicial = usuario?.email ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, t, e -> profileViewModel.updateUsuario(n, t, e) { navController.navigate("profile_updated") } }) }
-                    composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
-                    composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(com.example.rumboapp.DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
                     composable("driver_profile") { DriverProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_driver_profile") }, onEditVehicleClick = { navController.navigate("edit_vehicle") }, onAddPhotoClick = { navController.navigate("photo_picker") }) }
                     composable("edit_driver_profile") { val cond = profileViewModel.conductor; EditDriverProfileScreen(nombreInicial = cond?.nombre ?: "", vehiculoInicial = cond?.vehiculo ?: "", emailInicial = cond?.email ?: "", licenciaInicial = cond?.licencia ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, v, e, l -> profileViewModel.updateConductor(n, v, e, l) { navController.navigate("profile_updated") } }) }
-                    composable("edit_vehicle") { val veh = profileViewModel.conductor?.vehiculos?.firstOrNull(); EditVehicleScreen(vehiculoInicial = veh?.alias ?: "", placaInicial = veh?.placa ?: "", modeloInicial = veh?.modelo ?: "", anioInicial = veh?.anio ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { v, p, m, a -> val nuevosVehiculos = listOf(com.example.rumboapp.VehiculoGuardado(v, p, m, a)); profileViewModel.updateVehiculos(nuevosVehiculos) { navController.navigate("profile_updated") } }) }
+                    composable("edit_vehicle") { val veh = profileViewModel.conductor?.vehiculos?.firstOrNull(); EditVehicleScreen(vehiculoInicial = veh?.alias ?: "", placaInicial = veh?.placa ?: "", modeloInicial = veh?.modelo ?: "", anioInicial = veh?.anio ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { v, p, m, a -> val nuevosVehiculos = listOf(VehiculoGuardado(v, p, m, a)); profileViewModel.updateVehiculos(nuevosVehiculos) { navController.navigate("profile_updated") } }) }
                     composable("photo_picker") { PhotoPickerScreen(isLoading = profileViewModel.isLoading, onBackClick = { navController.popBackStack() }, onPhotoSelected = { uri -> if (uri != null) profileViewModel.uploadProfilePhoto(uri) { navController.navigate("profile_updated") } }) }
                     composable("avatar_picker") { AvatarPickerScreen(onBackClick = { navController.popBackStack() }, onAvatarSelected = { avatarName -> profileViewModel.updateAvatar(avatarName) { navController.navigate("profile_updated") } }) }
                     composable("profile_updated") { ProfileUpdatedScreen(onContinueClick = { navController.popBackStack("profile", inclusive = false) }) }
@@ -98,9 +120,12 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("viaje")
                             },
                             onIrADestino = { navController.navigate("destino") },
+                            onBackClick = { navController.popBackStack() },
+                            onProfileClick = { navController.navigate("profile") },
                             ciudadDestino = ciudadSeleccionada,
                             direccionOrigen = direccionOrigen,
-                            onOrigenCambiado = { direccionOrigen = it }
+                            onOrigenCambiado = { direccionOrigen = it },
+                            direccionesGuardadas = profileViewModel.usuario?.direcciones ?: emptyList() // Sugerencias añadidas
                         )
                     }
 
@@ -143,14 +168,16 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("calendario_regreso")
                             },
                             onConfirmarPagoClick = {
-                                profileViewModel.guardarReservaFirebase(
+                                val precioL = precioSeleccionado.filter { it.isDigit() }.toLongOrNull() ?: 0L
+                                pagoViewModel.setTiquete(InfoTiquete(
                                     origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
                                     destino = ciudadSeleccionada,
                                     fecha = "$diaSeleccionado de $mesSeleccionado",
+                                    pasajeros = 1,
                                     silla = sillaEscogida.toString(),
-                                    tipo = "IDA_PAGADA"
-                                )
-                                navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } }
+                                    total = precioL
+                                ))
+                                navController.navigate("pago_seleccion")
                             }
                         )
                     }
@@ -218,7 +245,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // --- RUTA INTERMEDIA: RESUMEN DE REGRESO ---
                     composable("resumen_regreso") {
                         ResumenregresoScreen(
                             origen = ciudadSeleccionada,
@@ -232,48 +258,157 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // --- RUTA FINAL: RESUMEN COMPARATIVO ---
                     composable("resumen_final") {
                         ResumenfinalScreen(
-                            // Datos Ida
                             origenIda = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
                             destinoIda = ciudadSeleccionada,
                             fechaIda = "$diaSeleccionado de $mesSeleccionado",
                             horaIda = "08:00 AM",
                             sillaIda = if (sillaEscogida != -1) sillaEscogida.toString() else "N/A",
                             precioIda = "$160.000",
-
-                            // Datos Regreso
                             origenRegreso = ciudadSeleccionada,
                             destinoRegreso = ciudadRegreso,
                             fechaRegreso = "$diaRegreso de $mesRegreso",
                             horaRegreso = horaSeleccionada,
                             sillaRegreso = if (sillaRegreso != -1) sillaRegreso.toString() else "N/A",
                             precioRegreso = precioSeleccionado,
-
                             onBackClick = { navController.popBackStack() },
                             onConfirmarPagoClick = {
-                                profileViewModel.guardarReservaFirebase(
+                                val pIda = 160000L
+                                val pReg = precioSeleccionado.filter { it.isDigit() }.toLongOrNull() ?: 0L
+                                pagoViewModel.setTiquete(InfoTiquete(
                                     origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
                                     destino = ciudadSeleccionada,
                                     fecha = "$diaSeleccionado de $mesSeleccionado",
+                                    pasajeros = 1,
                                     silla = sillaEscogida.toString(),
-                                    tipo = "IDA_VIAJE_DOBLE"
-                                )
-                                profileViewModel.guardarReservaFirebase(
-                                    origen = ciudadSeleccionada,
-                                    destino = ciudadRegreso,
-                                    fecha = "$diaRegreso de $mesRegreso",
-                                    silla = sillaRegreso.toString(),
-                                    tipo = "REGRESO_VIAJE_DOBLE"
-                                )
-                                navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } }
+                                    total = pIda + pReg
+                                ))
+                                navController.navigate("pago_seleccion")
                             }
                         )
                     }
 
                     composable("mensaje") {
                         MensajeScreen(onBackClick = { navController.popBackStack() })
+                    }
+
+                    // --- FLUJO DE PAGOS ---
+                    composable("pago_seleccion") {
+                        PagoTiqueteScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onContinuarClick = { metodo ->
+                                when (metodo) {
+                                    MetodoPago.TARJETA -> navController.navigate("pago_tarjeta")
+                                    MetodoPago.PSE -> navController.navigate("pago_pse")
+                                    MetodoPago.EFECTIVO -> navController.navigate("pago_efectivo")
+                                }
+                            }
+                        )
+                    }
+
+                    composable("pago_tarjeta") {
+                        DatosTarjetaScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onPagarClick = { num, nom, fec, cvv, cuo ->
+                                pagoViewModel.pagarConTarjeta(num, nom, fec, cvv, cuo)
+                                val nuevaTarjeta = TarjetaGuardada(num, nom, fec, cvv)
+                                val tarjetasActuales = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf()
+                                if (!tarjetasActuales.any { it.numero == num }) {
+                                    tarjetasActuales.add(nuevaTarjeta)
+                                    profileViewModel.updateTarjetas(tarjetasActuales) {}
+                                }
+                            }
+                        )
+                    }
+
+                    composable("pago_pse") {
+                        PagoPSEScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onIrAlBancoClick = { ban, tc, tp, doc ->
+                                pagoViewModel.pagarConPSE(ban, tc, tp, doc)
+                            }
+                        )
+                    }
+
+                    composable("pago_efectivo") {
+                        PagoEfectivoScreen(
+                            tiquete = pagoViewModel.tiqueteActual,
+                            isLoading = pagoState is PagoUiState.Procesando,
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
+                            onConfirmarClick = {
+                                pagoViewModel.confirmarEfectivo()
+                                profileViewModel.guardarReservaFirebase(
+                                    origen = pagoViewModel.tiqueteActual.origen,
+                                    destino = pagoViewModel.tiqueteActual.destino,
+                                    fecha = pagoViewModel.tiqueteActual.fecha,
+                                    silla = pagoViewModel.tiqueteActual.silla,
+                                    tipo = "EFECTIVO"
+                                )
+                            },
+                            onSeleccionarOtroClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable("pago_exitoso") {
+                        val state = pagoState as? PagoUiState.Exitoso
+                        if (state != null) {
+                            LaunchedEffect(Unit) {
+                                profileViewModel.guardarReservaFirebase(
+                                    origen = pagoViewModel.tiqueteActual.origen,
+                                    destino = pagoViewModel.tiqueteActual.destino,
+                                    fecha = pagoViewModel.tiqueteActual.fecha,
+                                    silla = pagoViewModel.tiqueteActual.silla,
+                                    tipo = state.metodoPago.name
+                                )
+                            }
+                        }
+                        PagoExitosoScreen(
+                            referencia = state?.referencia ?: "",
+                            total = state?.total ?: 0L,
+                            metodoPago = state?.metodoPago ?: MetodoPago.TARJETA,
+                            onVerResumenClick = {
+                                navController.navigate("historial") // Redirige al historial
+                            },
+                            onVolverInicioClick = {
+                                navController.navigate("calendario") { popUpTo("welcome") { inclusive = false } }
+                            }
+                        )
+                    }
+
+                    composable("pago_rechazado/{motivo}/{codigo}") { backStackEntry ->
+                        val motivo = backStackEntry.arguments?.getString("motivo") ?: ""
+                        val codigo = backStackEntry.arguments?.getString("codigo") ?: ""
+                        PagoRechazadoScreen(
+                            motivo = motivo,
+                            codigo = codigo,
+                            onIntentarNuevoClick = {
+                                pagoViewModel.resetearEstado()
+                                navController.popBackStack()
+                            },
+                            onSeleccionarOtroClick = {
+                                pagoViewModel.resetearEstado()
+                                navController.navigate("pago_seleccion") {
+                                    popUpTo("pago_seleccion") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+
+                    composable("historial") {
+                        HistorialScreen(
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } }
+                        )
                     }
                 }
             }
@@ -306,4 +441,3 @@ fun WelcomeScreen(onIngresarClick: () -> Unit) {
         }
     }
 }
-// version final para mi compañero

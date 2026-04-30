@@ -5,13 +5,21 @@ data class DireccionGuardada(
     val descripcion: String = ""
 )
 
+data class TarjetaGuardada(
+    val numero: String = "",
+    val nombreTitular: String = "",
+    val fechaVencimiento: String = "",
+    val cvv: String = ""
+)
+
 data class PerfilUsuario(
     val nombre: String = "",
     val telefono: String = "",
     val email: String = "",
     val direcciones: List<DireccionGuardada> = emptyList(),
+    val tarjetas: List<TarjetaGuardada> = emptyList(), // Nueva lista de tarjetas
     val fotoUrl: String = "",
-    val avatarName: String = "" // Nueva propiedad para el avatar seleccionado
+    val avatarName: String = ""
 )
 
 data class VehiculoGuardado(

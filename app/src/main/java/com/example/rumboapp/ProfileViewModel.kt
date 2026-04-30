@@ -77,7 +77,12 @@ class ProfileViewModel : ViewModel() {
                         DireccionGuardada(it["alias"] ?: "", it["descripcion"] ?: "")
                     } ?: emptyList()
 
-                    usuario = PerfilUsuario(nombre, telefono, email, direcciones, fotoUrl, avatarName)
+                    val tarjetasRaw = userDoc.get("tarjetas") as? List<Map<String, String>>
+                    val tarjetas = tarjetasRaw?.map {
+                        TarjetaGuardada(it["numero"] ?: "", it["nombreTitular"] ?: "", it["fechaVencimiento"] ?: "", it["cvv"] ?: "")
+                    } ?: emptyList()
+
+                    usuario = PerfilUsuario(nombre, telefono, email, direcciones, tarjetas, fotoUrl, avatarName)
                 }
 
                 val driverDoc = db.collection("conductores").document(userId).get().await()
@@ -131,6 +136,22 @@ class ProfileViewModel : ViewModel() {
             try {
                 db.collection("usuarios").document(userId).update("direcciones", direcciones).await()
                 usuario = usuario?.copy(direcciones = direcciones)
+                onSuccess()
+            } catch (e: Exception) {
+                errorMessage = e.message
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun updateTarjetas(tarjetas: List<TarjetaGuardada>, onSuccess: () -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            isLoading = true
+            try {
+                db.collection("usuarios").document(userId).update("tarjetas", tarjetas).await()
+                usuario = usuario?.copy(tarjetas = tarjetas)
                 onSuccess()
             } catch (e: Exception) {
                 errorMessage = e.message

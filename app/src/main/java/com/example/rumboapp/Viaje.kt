@@ -26,7 +26,7 @@ fun ViajeScreen(
     destino: String,
     fecha: String,
     onBackClick: () -> Unit,
-    onVerSillasClick: (String, String) -> Unit // Ahora recibe Precio y Hora
+    onVerSillasClick: (String, String) -> Unit // Recibe precio y hora
 ) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaCajas = Color(0xFFE8D596)
@@ -83,12 +83,9 @@ fun ViajeScreen(
                 Column(modifier = Modifier.padding(18.dp)) {
                     Text(text = "TU VIAJE", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Spacer(modifier = Modifier.height(10.dp))
-
-                    // Aquí llamamos a ResumenItem
                     ResumenItem(R.drawable.ic_location, origen, cremaCajas)
                     Spacer(modifier = Modifier.height(10.dp))
                     ResumenItem(R.drawable.ic_destination, destino, cremaCajas)
-
                     Spacer(modifier = Modifier.height(15.dp))
                     Text(text = "Fecha de salida", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                     Row(
@@ -115,7 +112,7 @@ fun ViajeScreen(
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(15.dp)) {
                 item { ViajeCardCorreccion("160.000", "10:00 am", "2:00 pm", onVerSillasClick) }
-                item { ViajeCardCorreccion("170.000", "08:00 pm", "12:00 am", onVerSillasClick) }
+                item { ViajeCardCorreccion("170.000", "8:00 pm", "12:00 am", onVerSillasClick) }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -128,31 +125,29 @@ fun ViajeScreen(
     }
 }
 
-// --- FUNCIÓN PARA LOS ITEMS DEL RESUMEN (ORIGEN Y DESTINO) ---
 @Composable
-fun ResumenItem(icono: Int, texto: String, colorFondo: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            painter = painterResource(id = icono),
-            contentDescription = null,
-            tint = Color.Unspecified,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(30.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(colorFondo),
-            contentAlignment = Alignment.CenterStart
+fun ResumenItem(iconId: Int, texto: String, colorCaja: Color) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().height(45.dp),
+        color = colorCaja,
+        shape = RoundedCornerShape(22.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                painter = painterResource(id = iconId),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = texto,
-                modifier = Modifier.padding(start = 10.dp),
+                color = Color.Black,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = Color.Black
+                fontSize = 14.sp
             )
         }
     }
@@ -184,7 +179,7 @@ fun ViajeCardCorreccion(precio: String, salida: String, llegada: String, onVerSi
                     Spacer(modifier = Modifier.height(15.dp))
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
-                            modifier = Modifier.clickable { onVerSillasClick("$ $precio", salida) },
+                            modifier = Modifier.clickable { onVerSillasClick(precio, salida) },
                             color = Color(0xFFE8D596),
                             shape = RoundedCornerShape(8.dp)
                         ) {
