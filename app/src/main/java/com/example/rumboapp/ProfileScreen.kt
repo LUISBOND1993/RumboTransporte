@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +42,8 @@ fun ProfileScreen(
     onEditAddressClick: () -> Unit = {},
     onAddAddressClick: () -> Unit = {},
     onAddPhotoClick: () -> Unit = {},
-    onSelectAvatarClick: () -> Unit = {}
+    onSelectAvatarClick: () -> Unit = {},
+    onHistorialClick: () -> Unit = {}
 ) {
     val usuario = viewModel.usuario
 
@@ -186,6 +188,39 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // ── Botón Historial de Viajes ──────────────
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .clickable { onHistorialClick() },
+                color = VerdeContenedor,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.History, contentDescription = null, tint = ColorDorado)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Ver Historial de Viajes",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        painter = painterResource(id = android.R.drawable.ic_media_play),
+                        contentDescription = null,
+                        tint = Color.White.copy(0.5f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
             // ── Tarjeta con datos personales ──────────────
             Surface(
                 modifier = Modifier
@@ -219,6 +254,75 @@ fun ProfileScreen(
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── Sección Tarjetas Guardadas ──────────────
+            Text(
+                text = "Tarjetas Guardadas",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                color = VerdeContenedor,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+                    if (usuario.tarjetas.isEmpty()) {
+                        Text("No hay tarjetas guardadas.", color = ColorCremita, fontSize = 13.sp)
+                    } else {
+                        usuario.tarjetas.forEachIndexed { index, tarjeta ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "**** **** **** ${tarjeta.numero.takeLast(4)}",
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = tarjeta.nombreTitular,
+                                        color = ColorCremita,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val nuevasTarjetas = usuario.tarjetas.toMutableList()
+                                        nuevasTarjetas.removeAt(index)
+                                        viewModel.updateTarjetas(nuevasTarjetas) {}
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Eliminar tarjeta",
+                                        tint = Color.White.copy(alpha = 0.7f),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            if (index < usuario.tarjetas.lastIndex) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                HorizontalDivider(color = Color.White.copy(alpha = 0.2f), thickness = 0.8.dp)
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+                        }
                     }
                 }
             }

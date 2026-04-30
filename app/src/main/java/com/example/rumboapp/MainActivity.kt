@@ -49,10 +49,15 @@ class MainActivity : ComponentActivity() {
                 var horaSeleccionada by remember { mutableStateOf("08:00 AM") }
 
                 // --- ESTADOS GLOBALES (REGRESO) ---
-                var ciudadRegreso by remember { mutableStateOf("") }
+                var ciudadOrigenRegreso by remember { mutableStateOf("") }
+                var direccionDestinoRegreso by remember { mutableStateOf("") }
                 var diaRegreso by remember { mutableIntStateOf(25) }
                 var mesRegreso by remember { mutableStateOf("Abril") }
                 var sillaRegreso by remember { mutableIntStateOf(-1) }
+
+                // --- ESTADOS PARA DIALOGOS DE GUARDADO ---
+                var showSaveAddressDialog by remember { mutableStateOf(false) }
+                var pendingAddress by remember { mutableStateOf<DireccionGuardada?>(null) }
 
                 // --- OBSERVADOR DE ESTADO DE PAGO ---
                 val pagoState by pagoViewModel.uiState.collectAsState()
@@ -65,10 +70,32 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         is PagoUiState.Rechazado -> {
-                            navController.navigate("pago_rechazado/${state.motivo}/${state.codigo}")
+                            navController.navigate("pago_rechazado/${state.motivo}/${state.codigo}/${state.metodoPago.name}")
                         }
                         else -> Unit
                     }
+                }
+
+                // Dialogo para guardar dirección
+                if (showSaveAddressDialog && pendingAddress != null) {
+                    AlertDialog(
+                        onDismissRequest = { showSaveAddressDialog = false },
+                        title = { Text("Guardar dirección") },
+                        text = { Text("¿Deseas guardar '${pendingAddress?.descripcion}' en tus direcciones favoritas?") },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                val nuevas = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf()
+                                if (!nuevas.any { it.descripcion == pendingAddress?.descripcion }) {
+                                    nuevas.add(pendingAddress!!)
+                                    profileViewModel.updateDirecciones(nuevas) {}
+                                }
+                                showSaveAddressDialog = false
+                            }) { Text("Guardar") }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showSaveAddressDialog = false }) { Text("No, gracias") }
+                        }
+                    )
                 }
 
                 NavHost(navController = navController, startDestination = "welcome") {
@@ -100,10 +127,13 @@ class MainActivity : ComponentActivity() {
                     composable("codigo_verificacion") { CodigoVerificacionScreen(onBackToMain = { navController.navigate("login") { popUpTo("login") { inclusive = true } } }) }
                     composable("registro") { RegistroScreen(onBackClick = { navController.popBackStack() }, onCreateAccountClick = { navController.navigate("registro_completado") }) }
                     composable("registro_completado") { RegistroCompletadoScreen(onLoginClick = { navController.navigate("login") { popUpTo("welcome") { inclusive = true } } }) }
-                    composable("profile") { ProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_profile") }, onEditAddressClick = { navController.navigate("edit_address") }, onAddAddressClick = { navController.navigate("add_address") }, onAddPhotoClick = { navController.navigate("photo_picker") }, onSelectAvatarClick = { navController.navigate("avatar_picker") }) }
+                    composable("profile") { ProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_profile") }, onEditAddressClick = { navController.navigate("edit_address") }, onAddAddressClick = { navController.navigate("add_address") }, onAddPhotoClick = { navController.navigate("photo_picker") }, onSelectAvatarClick = { navController.navigate("avatar_picker") }, onHistorialClick = { navController.navigate("historial") } ) }
                     composable("edit_profile") { val usuario = profileViewModel.usuario; EditProfileScreen(nombreInicial = usuario?.nombre ?: "", telefonoInicial = usuario?.telefono ?: "", emailInicial = usuario?.email ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, t, e -> profileViewModel.updateUsuario(n, t, e) { navController.navigate("profile_updated") } }) }
                     composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
                     composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    
+                    composable("add_card") { EditCardScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { num, nom, fec, cvv -> val nuevas = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf(); nuevas.add(TarjetaGuardada(num, nom, fec, cvv)); profileViewModel.updateTarjetas(nuevas) { navController.navigate("profile_updated") } }) }
+
                     composable("driver_profile") { DriverProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_driver_profile") }, onEditVehicleClick = { navController.navigate("edit_vehicle") }, onAddPhotoClick = { navController.navigate("photo_picker") }) }
                     composable("edit_driver_profile") { val cond = profileViewModel.conductor; EditDriverProfileScreen(nombreInicial = cond?.nombre ?: "", vehiculoInicial = cond?.vehiculo ?: "", emailInicial = cond?.email ?: "", licenciaInicial = cond?.licencia ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, v, e, l -> profileViewModel.updateConductor(n, v, e, l) { navController.navigate("profile_updated") } }) }
                     composable("edit_vehicle") { val veh = profileViewModel.conductor?.vehiculos?.firstOrNull(); EditVehicleScreen(vehiculoInicial = veh?.alias ?: "", placaInicial = veh?.placa ?: "", modeloInicial = veh?.modelo ?: "", anioInicial = veh?.anio ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { v, p, m, a -> val nuevosVehiculos = listOf(VehiculoGuardado(v, p, m, a)); profileViewModel.updateVehiculos(nuevosVehiculos) { navController.navigate("profile_updated") } }) }
@@ -117,6 +147,11 @@ class MainActivity : ComponentActivity() {
                             onDiaSeleccionado = { dia, mes ->
                                 diaSeleccionado = dia
                                 mesSeleccionado = mes
+                                // Preguntar por guardar dirección
+                                if (direccionOrigen.isNotEmpty() && !(profileViewModel.usuario?.direcciones?.any { it.descripcion == direccionOrigen } ?: false)) {
+                                    pendingAddress = DireccionGuardada("Mi Dirección", direccionOrigen)
+                                    showSaveAddressDialog = true
+                                }
                                 navController.navigate("viaje")
                             },
                             onIrADestino = { navController.navigate("destino") },
@@ -125,7 +160,7 @@ class MainActivity : ComponentActivity() {
                             ciudadDestino = ciudadSeleccionada,
                             direccionOrigen = direccionOrigen,
                             onOrigenCambiado = { direccionOrigen = it },
-                            direccionesGuardadas = profileViewModel.usuario?.direcciones ?: emptyList() // Sugerencias añadidas
+                            direccionesGuardadas = profileViewModel.usuario?.direcciones ?: emptyList()
                         )
                     }
 
@@ -188,43 +223,26 @@ class MainActivity : ComponentActivity() {
                             onDiaSeleccionado = { dia, mes ->
                                 diaRegreso = dia
                                 mesRegreso = mes
+                                // Preguntar por guardar dirección (Destino en regreso)
+                                if (direccionDestinoRegreso.isNotEmpty() && !(profileViewModel.usuario?.direcciones?.any { it.descripcion == direccionDestinoRegreso } ?: false)) {
+                                    pendingAddress = DireccionGuardada("Destino Frecuente", direccionDestinoRegreso)
+                                    showSaveAddressDialog = true
+                                }
                                 navController.navigate("viaje_regreso")
                             },
-                            onIrADestino = { navController.navigate("destino_regreso") },
-                            ciudadDestino = ciudadRegreso,
-                            direccionOrigen = direccionOrigen,
-                            onOrigenCambiado = { direccionOrigen = it },
+                            onOrigenCambiado = { ciudadOrigenRegreso = it },
+                            onDestinoCambiado = { direccionDestinoRegreso = it },
+                            ciudadOrigen = ciudadOrigenRegreso,
+                            direccionDestino = direccionDestinoRegreso,
+                            direccionesGuardadas = profileViewModel.usuario?.direcciones ?: emptyList(),
                             onBackClick = { navController.popBackStack() }
-                        )
-                    }
-
-                    composable("destino_regreso") {
-                        DestinoregresoScreen(
-                            onBackClick = { navController.popBackStack() },
-                            onCiudadEscogida = { ciudad ->
-                                ciudadRegreso = ciudad
-                                navController.navigate("dia_regreso")
-                            }
-                        )
-                    }
-
-                    composable("dia_regreso") {
-                        DiaregresoScreen(
-                            ciudadDestino = ciudadRegreso,
-                            direccionOrigen = direccionOrigen,
-                            onBackClick = { navController.popBackStack() },
-                            onDiaConfirmado = { dia, mes ->
-                                diaRegreso = dia
-                                mesRegreso = mes
-                                navController.navigate("viaje_regreso")
-                            }
                         )
                     }
 
                     composable("viaje_regreso") {
                         ViajeregresoScreen(
-                            origen = ciudadSeleccionada.ifEmpty { "ORIGEN" },
-                            destino = ciudadRegreso.ifEmpty { "DESTINO" },
+                            origen = ciudadOrigenRegreso.ifEmpty { "ORIGEN" },
+                            destino = direccionDestinoRegreso.ifEmpty { "DESTINO" },
                             fecha = "$diaRegreso de $mesRegreso",
                             onBackClick = { navController.popBackStack() },
                             onVerSillasClick = { precio, hora ->
@@ -247,8 +265,8 @@ class MainActivity : ComponentActivity() {
 
                     composable("resumen_regreso") {
                         ResumenregresoScreen(
-                            origen = ciudadSeleccionada,
-                            destino = ciudadRegreso,
+                            origen = ciudadOrigenRegreso,
+                            destino = direccionDestinoRegreso,
                             fecha = "$diaRegreso de $mesRegreso",
                             hora = horaSeleccionada,
                             sillaNumero = if (sillaRegreso != -1) sillaRegreso.toString() else "N/A",
@@ -266,8 +284,8 @@ class MainActivity : ComponentActivity() {
                             horaIda = "08:00 AM",
                             sillaIda = if (sillaEscogida != -1) sillaEscogida.toString() else "N/A",
                             precioIda = "$160.000",
-                            origenRegreso = ciudadSeleccionada,
-                            destinoRegreso = ciudadRegreso,
+                            origenRegreso = ciudadOrigenRegreso,
+                            destinoRegreso = direccionDestinoRegreso,
                             fechaRegreso = "$diaRegreso de $mesRegreso",
                             horaRegreso = horaSeleccionada,
                             sillaRegreso = if (sillaRegreso != -1) sillaRegreso.toString() else "N/A",
@@ -313,6 +331,7 @@ class MainActivity : ComponentActivity() {
                         DatosTarjetaScreen(
                             tiquete = pagoViewModel.tiqueteActual,
                             isLoading = pagoState is PagoUiState.Procesando,
+                            tarjetasGuardadas = profileViewModel.usuario?.tarjetas ?: emptyList(),
                             onBackClick = { navController.popBackStack() },
                             onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
                             onPagarClick = { num, nom, fec, cvv, cuo ->
@@ -377,7 +396,7 @@ class MainActivity : ComponentActivity() {
                             total = state?.total ?: 0L,
                             metodoPago = state?.metodoPago ?: MetodoPago.TARJETA,
                             onVerResumenClick = {
-                                navController.navigate("historial") // Redirige al historial
+                                navController.navigate("historial")
                             },
                             onVolverInicioClick = {
                                 navController.navigate("calendario") { popUpTo("welcome") { inclusive = false } }
@@ -385,12 +404,16 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable("pago_rechazado/{motivo}/{codigo}") { backStackEntry ->
+                    composable("pago_rechazado/{motivo}/{codigo}/{metodo}") { backStackEntry ->
                         val motivo = backStackEntry.arguments?.getString("motivo") ?: ""
                         val codigo = backStackEntry.arguments?.getString("codigo") ?: ""
+                        val metodoStr = backStackEntry.arguments?.getString("metodo") ?: "TARJETA"
+                        val metodo = try { MetodoPago.valueOf(metodoStr) } catch (e: Exception) { MetodoPago.TARJETA }
+
                         PagoRechazadoScreen(
                             motivo = motivo,
                             codigo = codigo,
+                            metodoPago = metodo,
                             onIntentarNuevoClick = {
                                 pagoViewModel.resetearEstado()
                                 navController.popBackStack()

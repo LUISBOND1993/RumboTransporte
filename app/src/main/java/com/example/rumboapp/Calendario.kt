@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.focus.onFocusChanged
 
 @Composable
 fun CalendarioScreen(
@@ -45,6 +46,9 @@ fun CalendarioScreen(
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
+
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -102,7 +106,17 @@ fun CalendarioScreen(
 
             CalBotonDestino("INGRESA TU DESTINO:", ciudadDestino, verdeFondoCalendario, onIrADestino)
 
-            Text("FECHA DE IDA", fontSize = 23.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 20.dp))
+            if (showError) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+
+            Text("FECHA DE IDA", fontSize = 23.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
 
             // MENÚ DESPLEGABLE DE MESES
             Box(modifier = Modifier.padding(vertical = 10.dp)) {
@@ -161,7 +175,16 @@ fun CalendarioScreen(
                                 val dia = fila * 7 + col + 1
                                 if (dia <= 31) {
                                     CalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = {
-                                        onDiaSeleccionado(dia, mesSeleccionado)
+                                        if (direccionOrigen.isBlank()) {
+                                            errorMessage = "Selecciona una dirección de origen"
+                                            showError = true
+                                        } else if (ciudadDestino.isBlank()) {
+                                            errorMessage = "Selecciona una ciudad de destino"
+                                            showError = true
+                                        } else {
+                                            showError = false
+                                            onDiaSeleccionado(dia, mesSeleccionado)
+                                        }
                                     })
                                 } else {
                                     Spacer(modifier = Modifier.size(34.dp))
@@ -192,9 +215,13 @@ fun CalEntradaDireccion(
                 value = valor,
                 onValueChange = {
                     onValueChange(it)
-                    showSuggestions = it.isNotEmpty() && sugerencias.isNotEmpty()
+                    showSuggestions = true
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp).clip(RoundedCornerShape(22.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .onFocusChanged { if (it.isFocused) showSuggestions = true },
                 placeholder = { Text("Ingresa tu dirección de recogida", color = Color.White.copy(0.6f), fontSize = 14.sp) },
                 textStyle = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold),
                 singleLine = true,
@@ -209,7 +236,7 @@ fun CalEntradaDireccion(
                 )
             )
 
-            if (showSuggestions) {
+            if (showSuggestions && sugerencias.isNotEmpty()) {
                 val filtered = sugerencias.filter { it.descripcion.contains(valor, ignoreCase = true) || it.alias.contains(valor, ignoreCase = true) }
                 if (filtered.isNotEmpty()) {
                     DropdownMenu(
