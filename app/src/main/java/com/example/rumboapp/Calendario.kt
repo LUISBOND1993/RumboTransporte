@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -14,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.focus.onFocusChanged
+import java.util.*
 
 @Composable
 fun CalendarioScreen(
@@ -35,17 +36,21 @@ fun CalendarioScreen(
     ciudadDestino: String,
     direccionOrigen: String,
     onOrigenCambiado: (String) -> Unit,
-    direccionesGuardadas: List<DireccionGuardada> = emptyList() // Sugerencias
+    direccionesGuardadas: List<DireccionGuardada> = emptyList()
 ) {
     val verdeFondoCalendario = Color(0xFF2D461E)
     val cremaCirculo = Color(0xFFE8D596)
 
+    val calendar = Calendar.getInstance()
+    val mesActualIdx = calendar.get(Calendar.MONTH)
+    val diaHoy = calendar.get(Calendar.DAY_OF_MONTH)
+
     var expandedMes by remember { mutableStateOf(false) }
-    var mesSeleccionado by remember { mutableStateOf("Marzo") }
     val meses = listOf(
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
+    var mesSeleccionado by remember { mutableStateOf(meses[mesActualIdx]) }
 
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -65,15 +70,15 @@ fun CalendarioScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // CABECERA
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = onBackClick,
                     modifier = Modifier.background(Color.White.copy(0.8f), CircleShape)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Atrás",
-                        modifier = Modifier.rotate(180f)
+                        tint = Color.Black
                     )
                 }
                 Image(
@@ -107,13 +112,19 @@ fun CalendarioScreen(
             CalBotonDestino("INGRESA TU DESTINO:", ciudadDestino, verdeFondoCalendario, onIrADestino)
 
             if (showError) {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
+                Surface(
+                    color = Color.White.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.padding(vertical = 4.dp)
-                )
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Text("FECHA DE IDA", fontSize = 23.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
@@ -134,7 +145,7 @@ fun CalendarioScreen(
                     onDismissRequest = { expandedMes = false },
                     modifier = Modifier.background(cremaCirculo)
                 ) {
-                    meses.forEach { mes ->
+                    meses.forEachIndexed { index, mes ->
                         DropdownMenuItem(
                             text = { Text(mes, fontWeight = FontWeight.Bold, color = verdeFondoCalendario) },
                             onClick = {
@@ -174,12 +185,18 @@ fun CalendarioScreen(
                             for (col in 0 until 7) {
                                 val dia = fila * 7 + col + 1
                                 if (dia <= 31) {
-                                    CalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = {
+                                    val esMesActual = meses.indexOf(mesSeleccionado) == mesActualIdx
+                                    val esPasado = esMesActual && dia < diaHoy
+                                    
+                                    CalItemDia(dia, if(esPasado) Color.Gray else cremaCirculo, verdeFondoCalendario, onClick = {
                                         if (direccionOrigen.isBlank()) {
                                             errorMessage = "Selecciona una dirección de origen"
                                             showError = true
                                         } else if (ciudadDestino.isBlank()) {
                                             errorMessage = "Selecciona una ciudad de destino"
+                                            showError = true
+                                        } else if (esPasado) {
+                                            errorMessage = "No puedes seleccionar un día anterior al de hoy"
                                             showError = true
                                         } else {
                                             showError = false
@@ -303,18 +320,4 @@ fun CalItemDia(dia: Int, colorCirculo: Color, colorTexto: Color, onClick: () -> 
     ) {
         Text(text = dia.toString(), color = colorTexto, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CalendarioPreview() {
-    CalendarioScreen(
-        onDiaSeleccionado = { _, _ -> },
-        onIrADestino = {},
-        onBackClick = {},
-        onProfileClick = {},
-        ciudadDestino = "",
-        direccionOrigen = "",
-        onOrigenCambiado = {}
-    )
 }

@@ -18,9 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.rumboapp.data.InfoTiquete
 import com.example.rumboapp.data.MetodoPago
 import com.example.rumboapp.ui.theme.RumboAppTheme
@@ -58,6 +60,9 @@ class MainActivity : ComponentActivity() {
                 // --- ESTADOS PARA DIALOGOS DE GUARDADO ---
                 var showSaveAddressDialog by remember { mutableStateOf(false) }
                 var pendingAddress by remember { mutableStateOf<DireccionGuardada?>(null) }
+                
+                var showSaveCardDialog by remember { mutableStateOf(false) }
+                var pendingCard by remember { mutableStateOf<TarjetaGuardada?>(null) }
 
                 // --- OBSERVADOR DE ESTADO DE PAGO ---
                 val pagoState by pagoViewModel.uiState.collectAsState()
@@ -80,8 +85,9 @@ class MainActivity : ComponentActivity() {
                 if (showSaveAddressDialog && pendingAddress != null) {
                     AlertDialog(
                         onDismissRequest = { showSaveAddressDialog = false },
-                        title = { Text("Guardar dirección") },
-                        text = { Text("¿Deseas guardar '${pendingAddress?.descripcion}' en tus direcciones favoritas?") },
+                        containerColor = Color(0xFF2D4B1E),
+                        title = { Text("Guardar dirección", color = Color.White) },
+                        text = { Text("¿Deseas guardar '${pendingAddress?.descripcion}' en tus direcciones favoritas?", color = Color(0xFFE2E2BD)) },
                         confirmButton = {
                             TextButton(onClick = {
                                 val nuevas = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf()
@@ -90,10 +96,33 @@ class MainActivity : ComponentActivity() {
                                     profileViewModel.updateDirecciones(nuevas) {}
                                 }
                                 showSaveAddressDialog = false
-                            }) { Text("Guardar") }
+                            }) { Text("Guardar", color = Color(0xFFD4AF37), fontWeight = FontWeight.Bold) }
                         },
                         dismissButton = {
-                            TextButton(onClick = { showSaveAddressDialog = false }) { Text("No, gracias") }
+                            TextButton(onClick = { showSaveAddressDialog = false }) { Text("No, gracias", color = Color.White) }
+                        }
+                    )
+                }
+
+                // Dialogo para guardar tarjeta
+                if (showSaveCardDialog && pendingCard != null) {
+                    AlertDialog(
+                        onDismissRequest = { showSaveCardDialog = false },
+                        containerColor = Color(0xFF2D4B1E),
+                        title = { Text("Guardar tarjeta", color = Color.White) },
+                        text = { Text("¿Deseas guardar esta tarjeta para futuras compras?", color = Color(0xFFE2E2BD)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                val nuevas = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf()
+                                if (!nuevas.any { it.numero == pendingCard?.numero }) {
+                                    nuevas.add(pendingCard!!)
+                                    profileViewModel.updateTarjetas(nuevas) {}
+                                }
+                                showSaveCardDialog = false
+                            }) { Text("Guardar", color = Color(0xFFD4AF37), fontWeight = FontWeight.Bold) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showSaveCardDialog = false }) { Text("No, gracias", color = Color.White) }
                         }
                     )
                 }
@@ -127,12 +156,85 @@ class MainActivity : ComponentActivity() {
                     composable("codigo_verificacion") { CodigoVerificacionScreen(onBackToMain = { navController.navigate("login") { popUpTo("login") { inclusive = true } } }) }
                     composable("registro") { RegistroScreen(onBackClick = { navController.popBackStack() }, onCreateAccountClick = { navController.navigate("registro_completado") }) }
                     composable("registro_completado") { RegistroCompletadoScreen(onLoginClick = { navController.navigate("login") { popUpTo("welcome") { inclusive = true } } }) }
-                    composable("profile") { ProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_profile") }, onEditAddressClick = { navController.navigate("edit_address") }, onAddAddressClick = { navController.navigate("add_address") }, onAddPhotoClick = { navController.navigate("photo_picker") }, onSelectAvatarClick = { navController.navigate("avatar_picker") }, onHistorialClick = { navController.navigate("historial") } ) }
+                    
+                    composable("profile") { 
+                        ProfileScreen(
+                            viewModel = profileViewModel, 
+                            onBackClick = { navController.popBackStack() }, 
+                            onHomeClick = { navController.navigate("calendario") }, 
+                            onEditProfileClick = { navController.navigate("edit_profile") }, 
+                            onEditAddressClick = { index ->
+                                navController.navigate("edit_address/$index")
+                            }, 
+                            onAddAddressClick = { navController.navigate("add_address") }, 
+                            onAddPhotoClick = { navController.navigate("photo_picker") }, 
+                            onSelectAvatarClick = { navController.navigate("avatar_picker") }, 
+                            onHistorialClick = { navController.navigate("historial") },
+                            onEditCardClick = { index ->
+                                navController.navigate("edit_card/$index")
+                            },
+                            onAddCardClick = { navController.navigate("add_card") }
+                        ) 
+                    }
+
                     composable("edit_profile") { val usuario = profileViewModel.usuario; EditProfileScreen(nombreInicial = usuario?.nombre ?: "", telefonoInicial = usuario?.telefono ?: "", emailInicial = usuario?.email ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, t, e -> profileViewModel.updateUsuario(n, t, e) { navController.navigate("profile_updated") } }) }
-                    composable("edit_address") { val dir = profileViewModel.usuario?.direcciones?.firstOrNull(); EditAddressScreen(aliasInicial = dir?.alias ?: "", direccionInicial = dir?.descripcion ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); if (nuevasDirecciones.isNotEmpty()) nuevasDirecciones[0] = DireccionGuardada(alias, "$ciudad, $desc"); else nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
+                    
+                    composable(
+                        "edit_address/{index}",
+                        arguments = listOf(navArgument("index") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val index = backStackEntry.arguments?.getInt("index") ?: 0
+                        val dir = profileViewModel.usuario?.direcciones?.getOrNull(index)
+                        if (dir != null) {
+                            val partes = dir.descripcion.split(", ")
+                            val ciudad = if (partes.size > 1) partes[0] else ""
+                            val direccion = if (partes.size > 1) partes.drop(1).joinToString(", ") else dir.descripcion
+                            
+                            EditAddressScreen(
+                                aliasInicial = dir.alias,
+                                ciudadInicial = ciudad,
+                                direccionInicial = direccion,
+                                onBackClick = { navController.popBackStack() },
+                                onGuardarClick = { alias, city, desc ->
+                                    val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf()
+                                    val nuevaDir = DireccionGuardada(alias, if (city.isNotEmpty()) "$city, $desc" else desc)
+                                    if (index < nuevasDirecciones.size) {
+                                        nuevasDirecciones[index] = nuevaDir
+                                        profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") }
+                                    }
+                                }
+                            )
+                        }
+                    }
+
                     composable("add_address") { EditAddressScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { alias, ciudad, desc -> val nuevasDirecciones = profileViewModel.usuario?.direcciones?.toMutableList() ?: mutableListOf(); nuevasDirecciones.add(DireccionGuardada(alias, "$ciudad, $desc")); profileViewModel.updateDirecciones(nuevasDirecciones) { navController.navigate("profile_updated") } }) }
                     
                     composable("add_card") { EditCardScreen(onBackClick = { navController.popBackStack() }, onGuardarClick = { num, nom, fec, cvv -> val nuevas = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf(); nuevas.add(TarjetaGuardada(num, nom, fec, cvv)); profileViewModel.updateTarjetas(nuevas) { navController.navigate("profile_updated") } }) }
+                    
+                    composable(
+                        "edit_card/{index}",
+                        arguments = listOf(navArgument("index") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val index = backStackEntry.arguments?.getInt("index") ?: 0
+                        val tarjetas = profileViewModel.usuario?.tarjetas
+                        val tarjeta = tarjetas?.getOrNull(index)
+                        if (tarjeta != null) {
+                            EditCardScreen(
+                                numeroInicial = tarjeta.numero,
+                                nombreInicial = tarjeta.nombreTitular,
+                                fechaInicial = tarjeta.fechaVencimiento,
+                                cvvInicial = tarjeta.cvv,
+                                onBackClick = { navController.popBackStack() },
+                                onGuardarClick = { n, no, f, c ->
+                                    val nuevas = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf()
+                                    if (index < nuevas.size) {
+                                        nuevas[index] = TarjetaGuardada(n, no, f, c)
+                                        profileViewModel.updateTarjetas(nuevas) { navController.navigate("profile_updated") }
+                                    }
+                                }
+                            )
+                        }
+                    }
 
                     composable("driver_profile") { DriverProfileScreen(viewModel = profileViewModel, onBackClick = { navController.popBackStack() }, onHomeClick = { navController.navigate("calendario") }, onEditProfileClick = { navController.navigate("edit_driver_profile") }, onEditVehicleClick = { navController.navigate("edit_vehicle") }, onAddPhotoClick = { navController.navigate("photo_picker") }) }
                     composable("edit_driver_profile") { val cond = profileViewModel.conductor; EditDriverProfileScreen(nombreInicial = cond?.nombre ?: "", vehiculoInicial = cond?.vehiculo ?: "", emailInicial = cond?.email ?: "", licenciaInicial = cond?.licencia ?: "", onBackClick = { navController.popBackStack() }, onGuardarClick = { n, v, e, l -> profileViewModel.updateConductor(n, v, e, l) { navController.navigate("profile_updated") } }) }
@@ -307,10 +409,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable("mensaje") {
-                        MensajeScreen(onBackClick = { navController.popBackStack() })
-                    }
-
                     // --- FLUJO DE PAGOS ---
                     composable("pago_seleccion") {
                         PagoTiqueteScreen(
@@ -336,11 +434,9 @@ class MainActivity : ComponentActivity() {
                             onHomeClick = { navController.navigate("calendario") { popUpTo("calendario") { inclusive = true } } },
                             onPagarClick = { num, nom, fec, cvv, cuo ->
                                 pagoViewModel.pagarConTarjeta(num, nom, fec, cvv, cuo)
-                                val nuevaTarjeta = TarjetaGuardada(num, nom, fec, cvv)
-                                val tarjetasActuales = profileViewModel.usuario?.tarjetas?.toMutableList() ?: mutableListOf()
-                                if (!tarjetasActuales.any { it.numero == num }) {
-                                    tarjetasActuales.add(nuevaTarjeta)
-                                    profileViewModel.updateTarjetas(tarjetasActuales) {}
+                                if (!(profileViewModel.usuario?.tarjetas?.any { it.numero == num } ?: false)) {
+                                    pendingCard = TarjetaGuardada(num, nom, fec, cvv)
+                                    showSaveCardDialog = true
                                 }
                             }
                         )
@@ -371,7 +467,8 @@ class MainActivity : ComponentActivity() {
                                     destino = pagoViewModel.tiqueteActual.destino,
                                     fecha = pagoViewModel.tiqueteActual.fecha,
                                     silla = pagoViewModel.tiqueteActual.silla,
-                                    tipo = "EFECTIVO"
+                                    tipo = "EFECTIVO",
+                                    total = pagoViewModel.tiqueteActual.total
                                 )
                             },
                             onSeleccionarOtroClick = { navController.popBackStack() }
@@ -387,7 +484,8 @@ class MainActivity : ComponentActivity() {
                                     destino = pagoViewModel.tiqueteActual.destino,
                                     fecha = pagoViewModel.tiqueteActual.fecha,
                                     silla = pagoViewModel.tiqueteActual.silla,
-                                    tipo = state.metodoPago.name
+                                    tipo = state.metodoPago.name,
+                                    total = state.total
                                 )
                             }
                         }

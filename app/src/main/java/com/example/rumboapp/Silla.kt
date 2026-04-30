@@ -6,12 +6,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -29,6 +30,7 @@ fun SillaScreen(
     val cremaCajas = Color(0xFFE8D596)
 
     var sillaSeleccionada by remember { mutableIntStateOf(-1) }
+    var showError by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -51,10 +53,10 @@ fun SillaScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Atrás",
-                    modifier = Modifier.size(24.dp).rotate(180f),
-                    tint = Color.Unspecified
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Black
                 )
             }
 
@@ -93,44 +95,78 @@ fun SillaScreen(
             Image(
                 painter = painterResource(id = R.drawable.duster),
                 contentDescription = null,
-                modifier = Modifier.size(500.dp),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
 
-            Box(modifier = Modifier.size(500.dp), contentAlignment = Alignment.Center) {
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                val boxWidth = maxWidth
+                val boxHeight = maxHeight
+
+                // Silla 1 (Atrás Izquierda)
                 PosicionAsientoItem(
                     numero = 1,
-                    onClick = { sillaSeleccionada = 1 },
+                    onClick = { sillaSeleccionada = 1; showError = false },
                     estaSeleccionado = sillaSeleccionada == 1,
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(bottom = 60.dp, start = 175.dp)
+                        .offset(x = boxWidth * 0.35f, y = boxHeight * 0.65f)
                 )
 
+                // Silla 2 (Atrás Derecha)
                 PosicionAsientoItem(
                     numero = 2,
-                    onClick = { sillaSeleccionada = 2 },
+                    onClick = { sillaSeleccionada = 2; showError = false },
                     estaSeleccionado = sillaSeleccionada == 2,
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(top = 165.dp, start = 175.dp)
+                        .offset(x = boxWidth * 0.55f, y = boxHeight * 0.65f)
                 )
 
+                // Silla 3 (Delantera Derecha - Copiloto)
                 PosicionAsientoItem(
                     numero = 3,
-                    onClick = { sillaSeleccionada = 3 },
+                    onClick = { sillaSeleccionada = 3; showError = false },
                     estaSeleccionado = sillaSeleccionada == 3,
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(top = 165.dp, end = 175.dp)
+                        .offset(x = boxWidth * 0.55f, y = boxHeight * 0.42f)
                 )
+                
+                // PUESTO CONDUCTOR (Solo icono de usuario, sin fondo verde de disponibilidad)
+                Box(
+                    modifier = Modifier
+                        .offset(x = boxWidth * 0.35f, y = boxHeight * 0.42f)
+                        .size(45.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_user),
+                        contentDescription = "Conductor",
+                        tint = Color.White.copy(alpha = 0.4f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
+        }
+
+        if (showError) {
+            Text(
+                text = "Por favor, selecciona una silla antes de continuar",
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = { if (sillaSeleccionada != -1) onConfirmarClick(sillaSeleccionada) },
+            onClick = { 
+                if (sillaSeleccionada != -1) {
+                    onConfirmarClick(sillaSeleccionada) 
+                } else {
+                    showError = true
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp),
@@ -156,7 +192,7 @@ fun PosicionAsientoItem(
 ) {
     Box(
         modifier = modifier
-            .size(55.dp)
+            .size(45.dp)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -170,7 +206,7 @@ fun PosicionAsientoItem(
             text = numero.toString(),
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
+            fontSize = 16.sp
         )
     }
 }

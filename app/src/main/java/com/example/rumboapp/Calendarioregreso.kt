@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.focus.onFocusChanged
+import java.util.*
 
 @Composable
 fun CalendarioregresoScreen(
@@ -35,17 +37,21 @@ fun CalendarioregresoScreen(
     direccionDestino: String,
     onBackClick: () -> Unit,
     direccionesGuardadas: List<DireccionGuardada> = emptyList(),
-    ciudadesDisponibles: List<String> = listOf("BOGOTÁ", "VILLAVICENCIO", "ACACÍAS", "GRANADA", "RESTREPO")
+    ciudadesDisponibles: List<String> = Constants.CIUDADES.map { it.uppercase() }
 ) {
     val verdeFondoCalendario = Color(0xFF2D461E)
     val cremaCirculo = Color(0xFFE8D596)
 
+    val calendar = Calendar.getInstance()
+    val mesActualIdx = calendar.get(Calendar.MONTH)
+    val diaHoy = calendar.get(Calendar.DAY_OF_MONTH)
+
     var expandedMes by remember { mutableStateOf(false) }
-    var mesSeleccionado by remember { mutableStateOf("Abril") }
     val meses = listOf(
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
+    var mesSeleccionado by remember { mutableStateOf(meses[mesActualIdx]) }
 
     var expandedOrigen by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
@@ -76,10 +82,9 @@ fun CalendarioregresoScreen(
                     modifier = Modifier.background(Color.White.copy(0.8f), CircleShape)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Atrás",
-                        modifier = Modifier.size(24.dp).rotate(180f),
-                        tint = Color.Unspecified
+                        tint = Color.Black
                     )
                 }
 
@@ -151,13 +156,19 @@ fun CalendarioregresoScreen(
             )
 
             if (showError) {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
+                Surface(
+                    color = Color.White.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.padding(vertical = 4.dp)
-                )
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
             }
 
             Text(
@@ -224,12 +235,18 @@ fun CalendarioregresoScreen(
                             for (col in 0 until 7) {
                                 val dia = fila * 7 + col + 1
                                 if (dia <= 31) {
-                                    RegCalItemDia(dia, cremaCirculo, verdeFondoCalendario, onClick = {
+                                    val esMesActual = meses.indexOf(mesSeleccionado) == mesActualIdx
+                                    val esPasado = esMesActual && dia < diaHoy
+                                    
+                                    RegCalItemDia(dia, if (esPasado) Color.Gray else cremaCirculo, verdeFondoCalendario, onClick = {
                                         if (ciudadOrigen.isBlank()) {
                                             errorMessage = "Selecciona una ciudad de origen"
                                             showError = true
                                         } else if (direccionDestino.isBlank()) {
                                             errorMessage = "Ingresa una dirección de destino"
+                                            showError = true
+                                        } else if (esPasado) {
+                                            errorMessage = "No puedes seleccionar un día anterior al de hoy"
                                             showError = true
                                         } else {
                                             showError = false

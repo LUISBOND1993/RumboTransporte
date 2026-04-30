@@ -1,39 +1,25 @@
 package com.example.rumboapp
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import kotlinx.coroutines.tasks.await
-
-data class RegistroHistorial(
-    val origen: String = "",
-    val destino: String = "",
-    val fecha: String = "",
-    val silla: String = "",
-    val total: Long = 0L,
-    val estado: String = "Confirmado",
-    val metodoPago: String = ""
-)
+import com.example.rumboapp.data.PagoFirestore
+import com.example.rumboapp.data.PagoRepository
+import com.example.rumboapp.data.Resultado
 
 @Composable
 fun HistorialScreen(
@@ -45,38 +31,23 @@ fun HistorialScreen(
     val colorDorado = Color(0xFFD4AF37)
     val colorCremita = Color(0xFFE2E2BD)
 
-    var registros by remember { mutableStateOf<List<RegistroHistorial>>(emptyList()) }
+    val repo = remember { PagoRepository() }
+    var registros by remember { mutableStateOf<List<PagoFirestore>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid != null) {
-            try {
-                val db = FirebaseFirestore.getInstance()
-                // Consultamos la colección de reservas que creamos en ProfileViewModel
-                val snapshot = db.collection("reservas_viajes")
-                    .whereEqualTo("usuarioId", uid)
-                    .orderBy("fechaCreacion", Query.Direction.DESCENDING)
-                    .get()
-                    .await()
-                
-                registros = snapshot.documents.map { doc ->
-                    RegistroHistorial(
-                        origen = doc.getString("origen") ?: "",
-                        destino = doc.getString("destino") ?: "",
-                        fecha = doc.getString("fechaViaje") ?: "",
-                        silla = doc.getString("asiento") ?: "",
-                        total = doc.getLong("total") ?: 68000L, // Valor por defecto si no está
-                        estado = doc.getString("estado") ?: "Confirmado",
-                        metodoPago = doc.getString("tipoServicio") ?: ""
-                    )
-                }
-            } catch (e: Exception) {
-                // Manejar error
-            } finally {
-                isLoading = false
+        val resultado = repo.obtenerHistorial()
+        when (resultado) {
+            is Resultado.Exito -> {
+                registros = resultado.datos
+                errorMsg = null
+            }
+            is Resultado.Error -> {
+                errorMsg = resultado.mensaje
             }
         }
+        isLoading = false
     }
 
     Column(
@@ -97,12 +68,12 @@ fun HistorialScreen(
                 onClick = onBackClick,
                 modifier = Modifier.background(Color.White.copy(0.2f), CircleShape)
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color.White)
             }
             Text(
                 "HISTORIAL DE VIAJES",
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold
             )
             IconButton(
@@ -113,21 +84,25 @@ fun HistorialScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = colorDorado)
             }
+        } else if (errorMsg != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Error: $errorMsg", color = Color.Red, modifier = Modifier.padding(16.dp))
+            }
         } else if (registros.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No tienes viajes registrados aún", color = colorCremita)
+                Text("No tienes viajes registrados aún", color = colorCremita, fontSize = 18.sp)
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 items(registros) { registro ->
                     CardHistorial(registro, verdeContenedor, colorDorado, colorCremita)
@@ -139,7 +114,7 @@ fun HistorialScreen(
 
 @Composable
 fun CardHistorial(
-    registro: RegistroHistorial,
+    registro: PagoFirestore,
     bgColor: Color,
     accentColor: Color,
     textColor: Color
@@ -147,9 +122,10 @@ fun CardHistorial(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = bgColor,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(24.dp),
+        shadowElevation = 6.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(24.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -158,45 +134,70 @@ fun CardHistorial(
                 Text(
                     "${registro.origen} → ${registro.destino}",
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontWeight = FontWeight.Black,
+                    fontSize = 20.sp,
+                    modifier = Modifier.weight(1f)
                 )
+                
+                val statusColor = if (registro.estado == "EXITOSO") Color(0xFF00E676) else Color(0xFFFF5252)
+                val statusBg = statusColor.copy(alpha = 0.2f)
+                
                 Surface(
-                    color = accentColor.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(8.dp)
+                    color = statusBg,
+                    shape = RoundedCornerShape(14.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, statusColor)
                 ) {
                     Text(
-                        registro.estado,
-                        color = accentColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        text = registro.estado,
+                        color = statusColor,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
                 Column {
-                    Text("Fecha: ${registro.fecha}", color = textColor, fontSize = 13.sp)
-                    Text("Silla: ${registro.silla}", color = textColor, fontSize = 13.sp)
+                    Text("FECHA", color = textColor.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(registro.fecha, color = textColor, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("SILLA", color = textColor.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(registro.silla, color = textColor, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Total pagado:", color = textColor, fontSize = 11.sp)
-                    Text("$${"%,d".format(registro.total)} COP", color = accentColor, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("TOTAL PAGADO", color = textColor.copy(alpha = 0.6f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("$${"%,d".format(registro.total)} COP", color = accentColor, fontWeight = FontWeight.Black, fontSize = 20.sp)
                 }
             }
             
             if (registro.metodoPago.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    "Método: ${registro.metodoPago}",
-                    color = textColor.copy(alpha = 0.7f),
-                    fontSize = 11.sp
-                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "MÉTODO: ${registro.metodoPago}",
+                        color = textColor.copy(alpha = 0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "REF: ${registro.referencia}",
+                        color = textColor.copy(alpha = 0.5f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

@@ -53,13 +53,13 @@ fun DestinoScreen(onBackClick: () -> Unit, onCiudadEscogida: (String) -> Unit) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     CajaCiudad("Buscar", cremaTarjetas, icono = { Icon(Icons.Default.Search, null, tint = Color.Gray) })
 
-                    val ciudades = listOf("Acacías", "Granada", "Puerto López", "San Martín", "Villavicencio")
-                    ciudades.forEach { ciudad ->
+                    // Usar la lista centralizada de ciudades
+                    Constants.CIUDADES.forEach { ciudad ->
                         Spacer(modifier = Modifier.height(10.dp))
                         CajaCiudad(
                             texto = ciudad,
                             colorFondo = cremaTarjetas,
-                            mostrarEstrella = false, // Estrella eliminada
+                            mostrarEstrella = false,
                             onClick = { onCiudadEscogida(ciudad) }
                         )
                     }

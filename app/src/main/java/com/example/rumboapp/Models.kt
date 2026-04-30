@@ -17,7 +17,7 @@ data class PerfilUsuario(
     val telefono: String = "",
     val email: String = "",
     val direcciones: List<DireccionGuardada> = emptyList(),
-    val tarjetas: List<TarjetaGuardada> = emptyList(), // Nueva lista de tarjetas
+    val tarjetas: List<TarjetaGuardada> = emptyList(),
     val fotoUrl: String = "",
     val avatarName: String = ""
 )
@@ -37,3 +37,7 @@ data class PerfilConductor(
     val licencia: String = "",
     val vehiculos: List<VehiculoGuardado> = emptyList()
 )
+
+object Constants {
+    val CIUDADES = listOf("Acacías", "Granada", "Puerto López", "San Martín", "Villavicencio")
+}

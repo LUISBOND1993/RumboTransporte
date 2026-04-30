@@ -32,7 +32,8 @@ class ProfileViewModel : ViewModel() {
         destino: String,
         fecha: String,
         silla: String,
-        tipo: String
+        tipo: String,
+        total: Long
     ) {
         val userId = auth.currentUser?.uid ?: "anonimo"
 
@@ -46,6 +47,7 @@ class ProfileViewModel : ViewModel() {
                     "fechaViaje" to fecha,
                     "asiento" to silla,
                     "tipoServicio" to tipo,
+                    "total" to total,
                     "estado" to "Confirmado",
                     "fechaCreacion" to com.google.firebase.Timestamp.now()
                 )

@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -39,11 +40,13 @@ fun ProfileScreen(
     onBackClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
-    onEditAddressClick: () -> Unit = {},
+    onEditAddressClick: (Int) -> Unit = {},
     onAddAddressClick: () -> Unit = {},
     onAddPhotoClick: () -> Unit = {},
     onSelectAvatarClick: () -> Unit = {},
-    onHistorialClick: () -> Unit = {}
+    onHistorialClick: () -> Unit = {},
+    onEditCardClick: (Int) -> Unit = {},
+    onAddCardClick: () -> Unit = {}
 ) {
     val usuario = viewModel.usuario
 
@@ -188,7 +191,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Botón Historial de Viajes ──────────────
+            // ── Botón Historial de Transacciones ──────────────
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -204,7 +207,7 @@ fun ProfileScreen(
                     Icon(Icons.Default.History, contentDescription = null, tint = ColorDorado)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Ver Historial de Viajes",
+                        text = "Ver Historial de Transacciones",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
@@ -301,20 +304,34 @@ fun ProfileScreen(
                                         fontSize = 12.sp
                                     )
                                 }
-                                IconButton(
-                                    onClick = {
-                                        val nuevasTarjetas = usuario.tarjetas.toMutableList()
-                                        nuevasTarjetas.removeAt(index)
-                                        viewModel.updateTarjetas(nuevasTarjetas) {}
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Eliminar tarjeta",
-                                        tint = Color.White.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                Row {
+                                    IconButton(
+                                        onClick = { onEditCardClick(index) },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar tarjeta",
+                                            tint = ColorDorado,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    IconButton(
+                                        onClick = {
+                                            val nuevasTarjetas = usuario.tarjetas.toMutableList()
+                                            nuevasTarjetas.removeAt(index)
+                                            viewModel.updateTarjetas(nuevasTarjetas) {}
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Eliminar tarjeta",
+                                            tint = Color.White.copy(alpha = 0.7f),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                             if (index < usuario.tarjetas.lastIndex) {
@@ -323,6 +340,24 @@ fun ProfileScreen(
                                 Spacer(modifier = Modifier.height(10.dp))
                             }
                         }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Button(
+                        onClick = onAddCardClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(38.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = ColorDorado),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(
+                            text = "Agregar tarjeta",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
@@ -370,20 +405,34 @@ fun ProfileScreen(
                                         fontSize = 13.sp
                                     )
                                 }
-                                IconButton(
-                                    onClick = {
-                                        val nuevasDirs = usuario.direcciones.toMutableList()
-                                        nuevasDirs.removeAt(index)
-                                        viewModel.updateDirecciones(nuevasDirs) {}
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Eliminar dirección",
-                                        tint = Color.White.copy(alpha = 0.7f),
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                Row {
+                                    IconButton(
+                                        onClick = { onEditAddressClick(index) },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar dirección",
+                                            tint = ColorDorado,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    IconButton(
+                                        onClick = {
+                                            val nuevasDirs = usuario.direcciones.toMutableList()
+                                            nuevasDirs.removeAt(index)
+                                            viewModel.updateDirecciones(nuevasDirs) {}
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Eliminar dirección",
+                                            tint = Color.White.copy(alpha = 0.7f),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                             if (index < usuario.direcciones.lastIndex) {
@@ -400,22 +449,6 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                     ) {
-                        Button(
-                            onClick = onEditAddressClick,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(38.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = ColorDorado),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text(
-                                text = "Editar",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                        }
-
                         Button(
                             onClick = onAddAddressClick,
                             modifier = Modifier
