@@ -17,8 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.rumboapp.R
 
 @Composable
 fun ViajeScreen(
@@ -26,7 +28,7 @@ fun ViajeScreen(
     destino: String,
     fecha: String,
     onBackClick: () -> Unit,
-    onVerSillasClick: (String, String) -> Unit // Recibe precio y hora
+    onVerSillasClick: (String, String) -> Unit // Este activa la navegación a Informacion
 ) {
     val verdeOscuro = Color(0xFF2D461E)
     val cremaCajas = Color(0xFFE8D596)
@@ -72,6 +74,7 @@ fun ViajeScreen(
                 text = "SELECCIONA TU VIAJE",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
+                color = Color.White,
                 modifier = Modifier.padding(vertical = 15.dp)
             )
 
@@ -119,7 +122,7 @@ fun ViajeScreen(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painter = painterResource(id = R.drawable.logo_rumbo), contentDescription = null, modifier = Modifier.size(90.dp))
-                Text("RUMBO", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+                Text("RUMBO", fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, color = Color.White)
             }
         }
     }

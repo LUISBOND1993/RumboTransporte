@@ -2,12 +2,12 @@ package com.example.rumboapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,15 +22,21 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.rumboapp.R
 
-val VerdeApp = Color(0xFF2E3D24)
-val DoradoApp = Color(0xFFD4B25A)
-
 @Composable
-fun Informacion() {
+fun Informacion(
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit,
+    onVerVehiculoClick: () -> Unit,
+    onChatClick: () -> Unit,
+    onVerConductorClick: () -> Unit // NUEVO: Para ir al perfil detallado del conductor
+) {
+    val verdeApp = Color(0xFF2E3D24)
+    val doradoApp = Color(0xFFD4B25A)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(VerdeApp)
+            .background(verdeApp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -53,11 +59,12 @@ fun Informacion() {
                 ) {
                     Surface(
                         shape = RoundedCornerShape(50),
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.clickable { onBackClick() }
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = "Atrás",
                             tint = Color.Black,
                             modifier = Modifier.size(35.dp).padding(8.dp)
                         )
@@ -65,11 +72,12 @@ fun Informacion() {
 
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = Color.Black
+                        color = Color.Black,
+                        modifier = Modifier.clickable { onHomeClick() }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Home,
-                            contentDescription = null,
+                            contentDescription = "Inicio",
                             tint = Color.White,
                             modifier = Modifier.size(45.dp).padding(10.dp)
                         )
@@ -82,12 +90,14 @@ fun Informacion() {
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // AQUÍ ESTÁ EL CAMBIO: La foto ahora es clickable
                     Image(
                         painter = painterResource(id = R.drawable.profesional),
-                        contentDescription = null,
+                        contentDescription = "Ver perfil",
                         modifier = Modifier
                             .size(90.dp)
-                            .clip(RoundedCornerShape(16.dp)),
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { onVerConductorClick() }, // <--- Acción de clic
                         contentScale = ContentScale.Crop
                     )
 
@@ -105,7 +115,7 @@ fun Informacion() {
                                 Icon(
                                     imageVector = Icons.Default.Star,
                                     contentDescription = null,
-                                    tint = DoradoApp,
+                                    tint = doradoApp,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -124,7 +134,7 @@ fun Informacion() {
                     .padding(16.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(DoradoApp)
+                    .background(doradoApp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.carrito),
@@ -146,18 +156,18 @@ fun Informacion() {
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { },
+                onClick = { onVerVehiculoClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DoradoApp),
+                colors = ButtonDefaults.buttonColors(containerColor = doradoApp),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center // Contenido centrado
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(Icons.Default.DirectionsCar, null, tint = Color.Black)
                     Spacer(modifier = Modifier.width(10.dp))
@@ -166,18 +176,18 @@ fun Informacion() {
             }
 
             Button(
-                onClick = { },
+                onClick = { onChatClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DoradoApp),
+                colors = ButtonDefaults.buttonColors(containerColor = doradoApp),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center // Contenido centrado
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(Icons.Default.Person, null, tint = Color.Black)
                     Spacer(modifier = Modifier.width(10.dp))
@@ -188,10 +198,4 @@ fun Informacion() {
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun InformacionPreview() {
-    Informacion()
 }

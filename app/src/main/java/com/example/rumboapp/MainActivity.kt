@@ -270,6 +270,8 @@ class MainActivity : ComponentActivity() {
                         DestinoScreen(onBackClick = { navController.popBackStack() }, onCiudadEscogida = { ciudad -> ciudadSeleccionada = ciudad; navController.popBackStack() })
                     }
 
+                    // 1. PANTALLA DE VIAJE (Actualizada para ir a Información)
+                    // 1. PANTALLA DE VIAJE
                     composable("viaje") {
                         ViajeScreen(
                             origen = direccionOrigen.ifEmpty { "VILLAVICENCIO" },
@@ -279,16 +281,81 @@ class MainActivity : ComponentActivity() {
                             onVerSillasClick = { precio, hora ->
                                 precioSeleccionado = precio
                                 horaSeleccionada = hora
+                                navController.navigate("informacion")
+                            }
+                        )
+                    }
+
+                    // 2. PANTALLA INFORMACIÓN CONDUCTOR
+                    // 2. PANTALLA INFORMACIÓN CONDUCTOR
+                    // 2. PANTALLA INFORMACIÓN (RESUMEN)
+                    composable("informacion") {
+                        Informacion(
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = {
+                                navController.navigate("calendario") {
+                                    popUpTo("calendario") { inclusive = true }
+                                }
+                            },
+                            onVerVehiculoClick = {
+                                navController.navigate("info_vehiculo")
+                            },
+                            onChatClick = {
+                                navController.navigate("chat")
+                            },
+                            onVerConductorClick = {
+                                // ¡NUEVO!: Al tocar la foto, vamos al perfil detallado
+                                navController.navigate("perfil_conductor")
+                            }
+                        )
+                    }
+
+                    // 3. NUEVA PANTALLA: PERFIL DETALLADO DEL CONDUCTOR
+                    composable("perfil_conductor") {
+                        InformacionConductor(
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = {
+                                navController.navigate("calendario") {
+                                    popUpTo("calendario") { inclusive = true }
+                                }
+                            },
+                            onChatClick = {
+                                navController.navigate("chat")
+                            }
+                        )
+                    }
+
+                    // 4. CHAT CON CONDUCTOR
+                    composable("chat") {
+                        ChatScreen(
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+
+                    // 5. INFORMACIÓN DEL VEHÍCULO
+                    composable("info_vehiculo") {
+                        InformacionVehiculo(
+                            onBackClick = { navController.popBackStack() },
+                            onHomeClick = {
+                                navController.navigate("calendario") {
+                                    popUpTo("calendario") { inclusive = true }
+                                }
+                            },
+                            onElegirSillaClick = {
                                 navController.navigate("silla")
                             }
                         )
                     }
 
+                    // 6. PANTALLA DE SILLA
                     composable("silla") {
                         SillaScreen(
                             onBackClick = { navController.popBackStack() },
                             onBellClick = { navController.navigate("mensaje") },
-                            onConfirmarClick = { numero -> sillaEscogida = numero; navController.navigate("resumen") }
+                            onConfirmarClick = { numero ->
+                                sillaEscogida = numero
+                                navController.navigate("resumen")
+                            }
                         )
                     }
 

@@ -2,6 +2,7 @@ package com.example.rumboapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +27,11 @@ import androidx.compose.ui.unit.sp
 import com.example.rumboapp.R
 
 @Composable
-fun InformacionConductor() {
+fun InformacionConductor(
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit,
+    onChatClick: () -> Unit // Esta función es la que el Main usará para ir a ChatScreen
+) {
     val verdeFondo = Color(0xFF2E3D24)
     val doradoContenedor = Color(0xFFE6D3A3)
 
@@ -45,17 +50,20 @@ fun InformacionConductor() {
         ) {
             Surface(
                 shape = RoundedCornerShape(50),
-                color = Color.White.copy(alpha = 0.8f)
+                color = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.clickable { onBackClick() }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
+                    tint = Color.Black,
                     modifier = Modifier.padding(8.dp).size(24.dp)
                 )
             }
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.clickable { onHomeClick() }
             ) {
                 Icon(
                     imageVector = Icons.Default.Home,
@@ -96,23 +104,23 @@ fun InformacionConductor() {
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
-                    Text("Andrés Molina", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("Andrés Molina", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_car_check), // Usa tu ic_verified aquí
+                            painter = painterResource(id = R.drawable.ic_car_check),
                             contentDescription = null,
                             tint = Color(0xFF4CAF50),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Conductor Verificado", fontSize = 14.sp)
+                        Text("Conductor Verificado", fontSize = 14.sp, color = Color.Black)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         repeat(5) {
                             Icon(Icons.Default.Star, null, tint = Color(0xFFD4B25A), modifier = Modifier.size(16.dp))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("4.7 (320)", fontSize = 12.sp)
+                        Text("4.7 (320)", fontSize = 12.sp, color = Color.Black)
                     }
                 }
             }
@@ -120,7 +128,6 @@ fun InformacionConductor() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Sección Información Personal
         ContenedorInfo(titulo = "Información personal", iconoTitulo = R.drawable.ic_user, colorBase = doradoContenedor) {
             ItemDetalle("Nombre:", "Andrés Molina", R.drawable.ic_user_detail)
             ItemDetalle("Cc:", "1.234.567.890", R.drawable.ic_id_card)
@@ -130,7 +137,6 @@ fun InformacionConductor() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Sección Contacto
         ContenedorInfo(titulo = "Contacto", iconoTitulo = R.drawable.ic_contact_book, colorBase = doradoContenedor) {
             ItemDetalle("Celular:", "300 123 4567", R.drawable.ic_phone)
             ItemDetalle("Email:", "andres.molina@email.com", R.drawable.ic_email)
@@ -138,32 +144,29 @@ fun InformacionConductor() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Sección Experiencia
         ContenedorInfo(titulo = "Información del conductor", iconoTitulo = R.drawable.ic_driver_info, colorBase = doradoContenedor) {
             ItemDetalle("Años de experiencia:", "6 años", R.drawable.ic_experience)
             ItemDetalle("Viajes realizados:", "320+", R.drawable.ic_trips)
             ItemDetalle("Calificación:", "4.7 / 5", R.drawable.ic_rating_stat)
         }
 
-        // Botón Final
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Botón Final para chatear
         Button(
-            onClick = { },
+            onClick = { onChatClick() }, // Aquí se dispara la navegación al chat
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
-                .height(35.dp),
+                .padding(horizontal = 20.dp)
+                .height(56.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4B25A)),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Icon(painter = painterResource(id = R.drawable.ic_user), contentDescription = null, tint = Color.Black)
-            Spacer(modifier = Modifier.width(5.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Text("Chatear con el conductor", color = Color.Black, fontWeight = FontWeight.Bold)
         }
-    }
-}
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ConductorPreview() {
-    InformacionConductor()
+        Spacer(modifier = Modifier.height(30.dp))
+    }
 }

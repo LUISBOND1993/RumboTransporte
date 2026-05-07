@@ -2,6 +2,7 @@ package com.example.rumboapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +25,11 @@ import androidx.compose.ui.unit.sp
 import com.example.rumboapp.R
 
 @Composable
-fun InformacionVehiculo() {
+fun InformacionVehiculo(
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit,
+    onElegirSillaClick: () -> Unit // Este es el que nos lleva a la pantalla final de sillas
+) {
     val verdeFondo = Color(0xFF2E3D24)
     val doradoContenedor = Color(0xFFE6D3A3)
 
@@ -43,21 +48,24 @@ fun InformacionVehiculo() {
         ) {
             Surface(
                 shape = RoundedCornerShape(50),
-                color = Color.White.copy(alpha = 0.8f)
+                color = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier.clickable { onBackClick() }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp).size(24.dp)
+                    contentDescription = "Atrás",
+                    modifier = Modifier.padding(8.dp).size(24.dp),
+                    tint = Color.Black
                 )
             }
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.clickable { onHomeClick() }
             ) {
                 Icon(
                     imageVector = Icons.Default.Home,
-                    contentDescription = null,
+                    contentDescription = "Inicio",
                     tint = Color.White,
                     modifier = Modifier.padding(10.dp).size(24.dp)
                 )
@@ -91,10 +99,9 @@ fun InformacionVehiculo() {
         // Contenedor Seguridad
         ContenedorInfo(
             titulo = "Seguridad",
-            iconoTitulo = R.drawable.ic_car_check, // Usando uno existente de tu lista
+            iconoTitulo = R.drawable.ic_car_check,
             colorBase = doradoContenedor
         ) {
-            // He usado ic_car_check para todos temporalmente para que el Split cargue sin errores
             ItemDetalle("Airbags:", "Sí", R.drawable.ic_security)
             ItemDetalle("Frenos ABS:", "Sí", R.drawable.ic_brakes)
             ItemDetalle("Cinturones de seguridad:", "5", R.drawable.ic_seatbelt)
@@ -107,13 +114,28 @@ fun InformacionVehiculo() {
         // Contenedor Detalles
         ContenedorInfo(
             titulo = "Detalles",
-            iconoTitulo = R.drawable.ic_car, // Usando ic_car de tu lista
+            iconoTitulo = R.drawable.ic_car,
             colorBase = doradoContenedor
         ) {
             ItemDetalle("Marca y modelo:", "Renault Duster", R.drawable.ic_brand)
             ItemDetalle("Tipo de vehículo:", "SUV", R.drawable.ic_car_type)
             ItemDetalle("Color:", "Blanco", R.drawable.ic_palette)
             ItemDetalle("Placa:", "ABC - 123", R.drawable.ic_license_plate)
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        // BOTÓN PARA CONTINUAR A SILLAS
+        Button(
+            onClick = { onElegirSillaClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4B25A)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("ELEGIR MI SILLA", color = Color.Black, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -139,7 +161,8 @@ fun ContenedorInfo(
             Icon(
                 painter = painterResource(id = iconoTitulo),
                 contentDescription = null,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(28.dp),
+                tint = Color.Black
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -163,17 +186,12 @@ fun ItemDetalle(label: String, valor: String, icono: Int) {
         Icon(
             painter = painterResource(id = icono),
             contentDescription = null,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(16.dp),
+            tint = Color.Black
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = label, fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 14.sp)
         Spacer(modifier = Modifier.width(4.dp))
         Text(text = valor, color = Color.Black, fontSize = 14.sp)
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun VehiculoPreview() {
-    InformacionVehiculo()
 }

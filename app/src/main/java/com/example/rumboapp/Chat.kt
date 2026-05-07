@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,22 +19,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.rumboapp.R
 
-// Definimos los colores para las burbujas según tu diseño
-val BurbujaConductor = Color(0xFFE6D3A3) // Dorado clarito
-val BurbujaUsuario = Color(0xFFD4B25A)    // Dorado fuerte
+// 1. DEFINICIÓN DE COLORES Y MODELOS (Esto evita los errores de "Unresolved reference")
+val BurbujaConductor = Color(0xFFE6D3A3)
+val BurbujaUsuario = Color(0xFFD4B25A)
 
 data class Mensaje(val texto: String, val esMio: Boolean, val hora: String)
 
 @Composable
-fun ChatScreen() {
+fun ChatScreen(
+    onBackClick: () -> Unit
+) {
     val verdeFondo = Color(0xFF2E3D24)
 
-    // Datos de ejemplo para el prototipo
     val listaMensajes = listOf(
         Mensaje("Hola Maria, Estoy por llegar al punto de encuentro.", false, "11:38"),
         Mensaje("Perfecto. Te estaré esperando!", true, "11:39")
@@ -45,14 +45,14 @@ fun ChatScreen() {
             .fillMaxSize()
             .background(verdeFondo)
     ) {
-        // Cabecera del Chat
+        // Cabecera
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { }) {
+            IconButton(onClick = { onBackClick() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
             }
             Image(
@@ -68,20 +68,16 @@ fun ChatScreen() {
                 Text("Andrés", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
             Icon(
-                painter = painterResource(id = R.drawable.ic_chat_header), // Tu nuevo icono
+                painter = painterResource(id = R.drawable.ic_chat_header),
                 contentDescription = null,
                 tint = Color(0xFF4CAF50),
                 modifier = Modifier.size(28.dp)
             )
         }
 
-        // Cuerpo del Chat (Lista de mensajes)
+        // Cuerpo del Chat
         LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            reverseLayout = false
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
         ) {
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
@@ -95,34 +91,23 @@ fun ChatScreen() {
             }
         }
 
-        // Sugerencias Rápidas
+        // Sugerencias
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(BurbujaConductor)
-                .padding(8.dp)
+            modifier = Modifier.padding(16.dp).clip(RoundedCornerShape(16.dp)).background(BurbujaConductor).padding(8.dp)
         ) {
             SugerenciaItem("Ya voy saliendo")
             SugerenciaItem("Estoy en el punto de encuentro")
             SugerenciaItem("¿En dónde estás?")
         }
 
-        // Input de Mensaje (Barra inferior)
+        // Input
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Enviar mensaje...") },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp)
-                    .clip(RoundedCornerShape(25.dp)),
+                value = "", onValueChange = {}, placeholder = { Text("Enviar mensaje...") },
+                modifier = Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(25.dp)),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = BurbujaConductor,
                     unfocusedContainerColor = BurbujaConductor,
@@ -137,12 +122,14 @@ fun ChatScreen() {
                 modifier = Modifier.size(50.dp),
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Send, null, tint = Color(0xFF4CAF50))
+                // Usamos la versión AutoMirrored para evitar el error de "Deprecated"
+                Icon(Icons.AutoMirrored.Filled.Send, null, tint = Color(0xFF4CAF50))
             }
         }
     }
 }
 
+// 2. FUNCIONES AUXILIARES (Esto corrige los errores de ChatBubble y SugerenciaItem)
 @Composable
 fun ChatBubble(mensaje: Mensaje) {
     val alineacion = if (mensaje.esMio) Alignment.CenterEnd else Alignment.CenterStart
@@ -180,10 +167,4 @@ fun SugerenciaItem(texto: String) {
     ) {
         Text(texto, color = Color.White, modifier = Modifier.padding(8.dp), fontWeight = FontWeight.Bold, fontSize = 14.sp)
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ChatPreview() {
-    ChatScreen()
 }
