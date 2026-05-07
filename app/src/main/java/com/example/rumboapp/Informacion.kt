@@ -1,5 +1,7 @@
 package com.example.rumboapp
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,10 +31,13 @@ fun Informacion(
     onHomeClick: () -> Unit,
     onVerVehiculoClick: () -> Unit,
     onChatClick: () -> Unit,
-    onVerConductorClick: () -> Unit // NUEVO: Para ir al perfil detallado del conductor
+    onVerConductorClick: () -> Unit
 ) {
     val verdeApp = Color(0xFF2E3D24)
     val doradoApp = Color(0xFFD4B25A)
+
+    // 1. Obtenemos el contexto para lanzar el Intent
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -90,14 +96,13 @@ fun Informacion(
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // AQUÍ ESTÁ EL CAMBIO: La foto ahora es clickable
                     Image(
                         painter = painterResource(id = R.drawable.profesional),
                         contentDescription = "Ver perfil",
                         modifier = Modifier
                             .size(90.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable { onVerConductorClick() }, // <--- Acción de clic
+                            .clickable { onVerConductorClick() },
                         contentScale = ContentScale.Crop
                     )
 
@@ -175,8 +180,20 @@ fun Informacion(
                 }
             }
 
+            // BOTÓN MODIFICADO PARA WHATSAPP
             Button(
-                onClick = { onChatClick() },
+                onClick = {
+                    // 2. Definimos el número y el mensaje (Formato internacional sin el +)
+                    val telefono = "573057498002"
+                    val mensaje = "Hola ! Te contacto desde RumboApp, estoy interesado en un viaje."
+                    val uri = Uri.parse("https://api.whatsapp.com/send?phone=$telefono&text=$mensaje")
+
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    context.startActivity(intent)
+
+                    // También llamamos a la función original por si tienes lógica extra
+                    onChatClick()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -197,5 +214,19 @@ fun Informacion(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun InformacionPreview() {
+    com.example.rumboapp.ui.theme.RumboAppTheme {
+        Informacion(
+            onBackClick = { },
+            onHomeClick = { },
+            onVerVehiculoClick = { },
+            onChatClick = { },
+            onVerConductorClick = { }
+        )
     }
 }

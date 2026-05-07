@@ -170,3 +170,16 @@ fun InformacionConductor(
         Spacer(modifier = Modifier.height(30.dp))
     }
 }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun InformacionConductorPreview() {
+    // Asegúrate de que el paquete sea el correcto
+    com.example.rumboapp.ui.theme.RumboAppTheme {
+        InformacionConductor(
+            onBackClick = { /* No hace nada en la previa */ },
+            onHomeClick = { /* No hace nada en la previa */ },
+            onChatClick = { /* No hace nada en la previa */ }
+        )
+    }
+}
