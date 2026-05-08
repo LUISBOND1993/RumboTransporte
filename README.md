@@ -13,17 +13,6 @@ RumboApp es una aplicación móvil de transporte desarrollada en **Kotlin** con 
 - **Contacto Directo:** Integración con la API de WhatsApp para comunicación instantánea entre usuario y conductor.
 - **UI Moderna:** Interfaz reactiva y fluida construida 100% con **Jetpack Compose** y **Material Design 3**.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_1" width="250" alt="Bienvenida"/>
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_2" width="250" alt="Login"/>
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_3" width="250" alt="Viajes Disponibles"/>
-</p>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_4" width="250" alt="Detalle Conductor"/>
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_5" width="250" alt="Información Vehículo"/>
-  <img src="https://github.com/user-attachments/assets/ID_CAPTURA_6" width="250" alt="Perfil"/>
-</p>
 
 ## 🛠️ Instalación
 Para ejecutar RumboApp en tu entorno local, sigue estos pasos:
